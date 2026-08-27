@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Browse and filter proof-of-concept pilot projects by agency, technology, and status.">
+
+    <title>PoC Gallery</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="assets/favicon.png">
+</head>
+
+<body>
+    <div id="app">
+
+        <header class="header">
+            <div class="header-content">
+                <img 
+                    src="assets/logo.png" 
+                    alt="Logo" 
+                    class="logo"
+                    style="width: 200px;">
+                <!-- <div class="header-actions">
+                    <button class="header-button" id="refresh-button" type="button">
+                        Refresh
+                    </button>
+                </div> -->
+            </div>
+        </header>
+
+        <main class="main-content">
+
+            <section class="filter-bar" role="search" aria-label="Filter proof-of-concepts">
+                <div class="search-container">
+                    <label for="search-input">Search</label>
+                    <input
+                        type="text"
+                        id="search-input"
+                        placeholder="Search PoCs..."
+                        autocomplete="off"
+                    >
+                </div>
+
+                <div class="filter-container">
+                    <label for="agency-filter">Agency</label>
+                    <select id="agency-filter">
+                        <option value="all">All Agencies</option>
+                    </select>
+                </div>
+
+                <div class="filter-container">
+                <label>
+                    Technology
+                </label>
+
+                <!-- CHANGED CLASS NAME -->
+                <div
+                    class="technology-multi-select"
+                    id="technology-multi-select"
+                >
+
+                    <!-- CHANGED CLASS NAME -->
+                    <button
+                        type="button"
+                        class="technology-trigger"
+                        id="technology-trigger"
+                    >
+
+                        <span id="technology-selected-text">
+                            All Technologies
+                        </span>
+
+                        <!-- Removed separate arrow span since CSS handles it via ::after -->
+
+                    </button>
+
+                    <!-- CHANGED CLASS NAME -->
+                    <div
+                        class="technology-menu"
+                        id="technology-menu"
+                        hidden
+                    ></div>
+
+                </div>
+            </div>
+
+                <div class="filter-container">
+                    <label for="status-filter">Status</label>
+                    <select id="status-filter">
+                        <option value="all">All Statuses</option>
+                        <option value="Complete">Complete</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Planning">Planning</option>
+                    </select>
+                </div>
+            </section>
+
+            <section class="dashboard">
+                <section class="gallery-section" aria-labelledby="gallery-heading">
+                    <div class="section-header">
+                        <div>
+                            <h2 id="gallery-heading" style="color: white;">Proof of Concepts</h2>
+                            <p id="poc-count" aria-live="polite" aria-atomic="true">0 PoCs</p>
+                        </div>
+                    </div>
+
+                    <div
+                        class="poc-grid"
+                        id="poc-grid"
+                        aria-live="polite"
+                    ></div>
+
+                    <div class="empty-state" id="empty-state" hidden>
+                        <h3>No PoCs found</h3>
+                        <p>Try changing your search or filters.</p>
+                    </div>
+                </section>
+            </section>
+
+        </main>
+
+        <div
+            class="modal-overlay"
+            id="details-modal"
+            aria-hidden="true"
+        >
+            <div
+                class="details-modal"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="modal-title"
+            >
+                <div class="modal-header">
+                    <h2 id="modal-title">PoC Details</h2>
+                    <button
+                        class="close-button"
+                        id="close-modal"
+                        type="button"
+                        aria-label="Close details"
+                    >
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-content" id="modal-content"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

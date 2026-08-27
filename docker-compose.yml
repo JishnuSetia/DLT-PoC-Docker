@@ -1,0 +1,23 @@
+services:
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ddl-poc-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    expose:
+      - "8000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ddl-poc-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend

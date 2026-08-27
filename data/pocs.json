@@ -1,0 +1,185 @@
+[
+    {
+        "id": 1,
+        "title": "AI Document Processing",
+        "agency": "Digital Lab",
+        "status": "Complete",
+        "technologies": [
+            "Python",
+            "OpenAI",
+            "FastAPI"
+        ],
+        "description": "An AI-powered solution for automatically extracting and processing information from business documents.",
+        "fullDescription": "This proof of concept explores how artificial intelligence can automate document processing workflows. The system extracts structured information from unstructured documents and makes the results available through an API.",
+        "benefits": [
+            "Reduces manual document processing",
+            "Improves data extraction accuracy",
+            "Accelerates business workflows",
+            "Provides structured data through an API"
+        ],
+        "team": [
+            {
+                "name": "Jason",
+                "role": "AI Engineer"
+            },
+            {
+                "name": "Kaber",
+                "role": "Backend Developer"
+            },
+            {
+                "name": "Cannen",
+                "role": "Product Designer"
+            }
+        ],
+        "link": "https://example.com"
+    },
+    {
+        "id": 2,
+        "title": "Smart Traffic Analytics",
+        "agency": "Transport Authority",
+        "status": "In Progress",
+        "technologies": [
+            "Python",
+            "OpenCV",
+            "AI"
+        ],
+        "description": "A computer vision solution designed to analyze traffic patterns and identify congestion.",
+        "fullDescription": "This PoC uses computer vision and machine learning to analyze traffic camera footage. The system detects vehicles, estimates traffic density, and identifies congestion patterns.",
+        "benefits": [
+            "Real-time traffic monitoring",
+            "Automated congestion detection",
+            "Improved traffic planning",
+            "Reduced manual monitoring"
+        ],
+        "team": [
+            {
+                "name": "Mase",
+                "role": "ML Engineer"
+            },
+            {
+                "name": "Jason",
+                "role": "Data Scientist"
+            }
+        ]
+    },
+    {
+        "id": 3,
+        "title": "Citizen Service Chatbot",
+        "agency": "Government Services",
+        "status": "Complete",
+        "technologies": [
+            "Node.js",
+            "OpenAI",
+            "React"
+        ],
+        "description": "An AI chatbot designed to help citizens quickly find information about government services.",
+        "fullDescription": "This PoC demonstrates an intelligent conversational assistant capable of answering common citizen questions and guiding users toward the appropriate government services.",
+        "benefits": [
+            "24/7 citizen support",
+            "Faster access to information",
+            "Reduces support workload",
+            "Improves citizen experience"
+        ],
+        "team": [
+            {
+                "name": "Cannen",
+                "role": "Frontend Developer"
+            },
+            {
+                "name": "Kaber",
+                "role": "AI Engineer"
+            },
+            {
+                "name": "Mase",
+                "role": "Backend Developer"
+            }
+        ]
+    },
+    {
+        "id": 4,
+        "title": "Predictive Maintenance",
+        "agency": "Energy Authority",
+        "status": "In Progress",
+        "technologies": [
+            "Python",
+            "TensorFlow",
+            "PostgreSQL"
+        ],
+        "description": "A predictive analytics platform that identifies potential equipment failures before they occur.",
+        "fullDescription": "The system analyzes historical equipment data and sensor readings to identify patterns associated with equipment failures. Machine learning models are used to predict potential maintenance requirements.",
+        "benefits": [
+            "Reduces unexpected equipment failures",
+            "Improves maintenance planning",
+            "Reduces operational downtime",
+            "Extends equipment lifespan"
+        ],
+        "team": [
+            {
+                "name": "Jason",
+                "role": "ML Engineer"
+            },
+            {
+                "name": "Mase",
+                "role": "Data Engineer"
+            }
+        ]
+    },
+    {
+        "id": 5,
+        "title": "Digital Identity Verification",
+        "agency": "Digital Lab",
+        "status": "Planning",
+        "technologies": [
+            "Python",
+            "OpenCV",
+            "FastAPI"
+        ],
+        "description": "A biometric identity verification system for secure digital services.",
+        "fullDescription": "This PoC investigates biometric verification technologies that can be used to securely authenticate users accessing digital government services.",
+        "benefits": [
+            "Stronger identity verification",
+            "Improved digital security",
+            "Faster authentication",
+            "Reduced identity fraud"
+        ],
+        "team": [
+            {
+                "name": "Kaber",
+                "role": "Security Engineer"
+            },
+            {
+                "name": "Cannen",
+                "role": "UX Designer"
+            }
+        ]
+    },
+    {
+        "id": 6,
+        "title": "AI Resource Optimizer",
+        "agency": "Infrastructure",
+        "status": "Complete",
+        "technologies": [
+            "Python",
+            "AI",
+            "PostgreSQL"
+        ],
+        "description": "An AI-based optimization engine for improving allocation of infrastructure resources.",
+        "fullDescription": "This proof of concept evaluates how machine learning and optimization algorithms can improve the allocation of infrastructure resources based on demand, availability, and operational constraints.",
+        "benefits": [
+            "Optimizes resource allocation",
+            "Reduces operational costs",
+            "Improves resource utilization",
+            "Supports data-driven decisions"
+        ],
+        "team": [
+            {
+                "name": "Mase",
+                "role": "AI Engineer"
+            },
+            {
+                "name": "Jason",
+                "role": "Backend Developer"
+            }
+        ]
+    }
+]
