@@ -4,7 +4,7 @@ A modern, responsive Proof of Concept (PoC) Gallery designed to provide a centra
 
 The application provides a clean, government-oriented interface for showcasing PoCs developed across different agencies, teams, and technology areas.
 
-> **Current Version:** AI/chat functionality is not included in this release. The backend currently provides PoC and deliverable API functionality, while the AI functionality is reserved for a future version.
+> **Current Version:** The application currently provides PoC and deliverable functionality through a Dockerized Nginx + FastAPI architecture with Redis caching. AI/chat functionality is reserved for a future version.
 
 ---
 
@@ -25,9 +25,10 @@ POC Gallery is a web-based platform that allows users to:
 * Open a PoC directly using a shared URL
 * Navigate to external PoC resources
 * Retrieve PoC and deliverable information through the backend API
+* Cache frequently requested API data using Redis
 * Run the application using Docker containers
 
-The frontend is lightweight and dependency-free, while the backend provides API functionality for PoC and deliverable data.
+The frontend is lightweight and dependency-free, while the backend provides API functionality, external LabPortal communication, caching, and media proxying.
 
 ---
 
@@ -170,7 +171,7 @@ The **Share** action copies the current PoC URL to the user's clipboard.
 
 # Backend API
 
-The application includes a lightweight Python/FastAPI backend.
+The application includes a Python/FastAPI backend.
 
 The backend currently provides deliverable-related API endpoints used by the frontend.
 
@@ -178,9 +179,11 @@ The backend is responsible for:
 
 * Retrieving deliverable information
 * Retrieving deliverable details
-* Proxying demonstration videos where applicable
 * Communicating with external LabPortal services
+* Proxying demonstration videos where applicable
+* Caching frequently requested deliverable data
 * Returning structured API responses to the frontend
+* Handling external API failures and errors
 
 The backend is located under:
 
@@ -190,40 +193,163 @@ backend/
 
 ---
 
-# Current Architecture
+# Redis Caching
 
-The current application consists of two Dockerized services:
+Redis is used as the application's centralized caching layer.
+
+The purpose of Redis is to reduce unnecessary requests to the external LabPortal API and improve response times for frequently accessed data.
+
+Instead of every frontend request requiring a new request to LabPortal, the backend can:
 
 ```text
-                    ┌─────────────────────┐
-                    │        User         │
-                    └──────────┬──────────┘
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │       Nginx         │
-                    │   Frontend Server   │
-                    │      Port 80        │
-                    └──────────┬──────────┘
-                               │
-                    ┌──────────┴──────────┐
-                    │                     │
-                    ▼                     ▼
-             Static Frontend        /api/* Requests
-             HTML/CSS/JS/JSON              │
-                                          ▼
-                               ┌─────────────────────┐
-                               │      FastAPI        │
-                               │       Backend       │
-                               │      Port 8000      │
-                               └──────────┬──────────┘
-                                          │
-                                          ▼
-                               ┌─────────────────────┐
-                               │      LabPortal      │
-                               │        APIs         │
-                               └─────────────────────┘
+Frontend Request
+       │
+       ▼
+    FastAPI
+       │
+       ▼
+   Check Redis
+    /       \
+  HIT       MISS
+   │          │
+   ▼          ▼
+Return     LabPortal
+Cached       API
+Data          │
+              ▼
+           Redis
+              │
+              ▼
+        Return Data
 ```
+
+## Why Redis?
+
+The initial implementation used process-local in-memory caching. While this works for development and a single backend process, it does not scale well when multiple backend instances are running.
+
+For example:
+
+```text
+Backend Instance 1
+      └── Local Memory Cache
+
+Backend Instance 2
+      └── Local Memory Cache
+
+Backend Instance 3
+      └── Local Memory Cache
+```
+
+Each instance would maintain a different cache.
+
+Redis provides a shared cache:
+
+```text
+              ┌──────────────┐
+              │    Redis     │
+              │ Shared Cache │
+              └──────┬───────┘
+                     │
+        ┌────────────┼────────────┐
+        │            │            │
+        ▼            ▼            ▼
+   FastAPI #1   FastAPI #2   FastAPI #3
+```
+
+This allows multiple backend instances to share cached data.
+
+---
+
+## Cache Strategy
+
+The application uses a time-to-live (TTL) based caching strategy.
+
+The current cache target is approximately:
+
+```text
+5 minutes
+```
+
+Frequently requested deliverables can therefore be served from Redis without contacting LabPortal on every request.
+
+Conceptually:
+
+```text
+GET /api/deliverables
+        │
+        ▼
+ Redis Cache
+        │
+   ┌────┴────┐
+   │         │
+  HIT       MISS
+   │         │
+   ▼         ▼
+Return    LabPortal
+Cached       API
+Data         │
+             ▼
+           Redis
+             │
+             ▼
+          Response
+```
+
+The cache should eventually support separate keys for:
+
+* Deliverable lists
+* Individual deliverables
+* Other frequently accessed API resources
+
+Example key patterns:
+
+```text
+deliverables:all
+deliverable:{id}
+```
+
+The exact key structure may evolve as the caching layer expands.
+
+---
+
+# Current Architecture
+
+The application consists of three primary Dockerized services:
+
+```text
+                         ┌─────────────────────┐
+                         │        User         │
+                         └──────────┬──────────┘
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │       Nginx         │
+                         │   Frontend Server   │
+                         │      Port 80        │
+                         └──────────┬──────────┘
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │      FastAPI        │
+                         │       Backend       │
+                         │      Port 8000      │
+                         └──────────┬──────────┘
+                                    │
+                         ┌──────────┴──────────┐
+                         │                     │
+                         ▼                     ▼
+                  ┌──────────────┐      ┌──────────────┐
+                  │    Redis     │      │  LabPortal   │
+                  │    Cache     │      │     APIs     │
+                  │  Internal    │      │   External   │
+                  └──────────────┘      └──────────────┘
+```
+
+The frontend communicates with the backend through Nginx.
+
+The backend communicates with Redis and the external LabPortal API.
+
+Redis is not directly exposed to the public network.
 
 ---
 
@@ -231,7 +357,7 @@ The current application consists of two Dockerized services:
 
 The project is containerized using Docker Compose.
 
-There are currently two containers:
+There are currently three containers:
 
 ## Frontend Container
 
@@ -252,6 +378,8 @@ The frontend is exposed on:
 http://localhost
 ```
 
+---
+
 ## Backend Container
 
 The backend container runs FastAPI using Uvicorn.
@@ -261,6 +389,8 @@ Responsibilities:
 * Provide REST API endpoints
 * Handle deliverable requests
 * Communicate with LabPortal
+* Communicate with Redis
+* Cache API responses
 * Proxy demonstration videos where applicable
 
 The backend listens internally on:
@@ -269,7 +399,31 @@ The backend listens internally on:
 0.0.0.0:8000
 ```
 
-The backend is intentionally not exposed directly to the host in the current Docker configuration. Nginx communicates with it through the Docker Compose network.
+The backend is intentionally not exposed directly to the host in the current Docker configuration.
+
+Nginx communicates with it through the Docker Compose network.
+
+---
+
+## Redis Container
+
+The Redis container provides the centralized application cache.
+
+Responsibilities:
+
+* Store cached API responses
+* Share cache data between backend instances
+* Reduce external LabPortal API requests
+* Improve response latency for frequently accessed resources
+* Provide a foundation for future distributed caching
+
+Redis listens internally on its standard port:
+
+```text
+6379
+```
+
+Redis should remain internal to the Docker/network environment and should not be publicly exposed.
 
 ---
 
@@ -331,6 +485,14 @@ The frontend does not use a frontend framework or package manager.
 
 ---
 
+## Caching
+
+| Technology | Purpose                         |
+| ---------- | ------------------------------- |
+| Redis      | Distributed application caching |
+
+---
+
 ## Infrastructure
 
 | Technology     | Purpose                           |
@@ -338,6 +500,7 @@ The frontend does not use a frontend framework or package manager.
 | Docker         | Containerization                  |
 | Docker Compose | Multi-container orchestration     |
 | Nginx          | Frontend server and reverse proxy |
+| Redis          | Shared cache layer                |
 
 ---
 
@@ -454,7 +617,7 @@ The frontend will be available at:
 http://localhost
 ```
 
-The backend is available to the frontend through the internal Docker network.
+The backend and Redis services communicate through the internal Docker Compose network.
 
 To run the containers in the background:
 
@@ -480,7 +643,7 @@ docker compose up
 
 # Backend Environment Variables
 
-The backend can use environment variables for configuration.
+The backend uses environment variables for configuration.
 
 For example:
 
@@ -496,6 +659,14 @@ Example:
 LABPORTAL_API_KEY=your_api_key_here
 ```
 
+Redis configuration can also be provided through environment variables.
+
+For example:
+
+```text
+REDIS_URL=redis://redis:6379
+```
+
 > **Important:** `.env` files containing credentials must not be committed to Git.
 
 A production deployment should use the deployment platform's secret/environment-variable management instead of storing credentials in the repository.
@@ -504,7 +675,7 @@ A production deployment should use the deployment platform's secret/environment-
 
 # Running Without Docker
 
-Docker is recommended for deployment, but the backend can also be run directly during development.
+Docker is recommended for deployment, but the frontend and backend can also be run directly during development.
 
 ## Frontend Only
 
@@ -593,14 +764,18 @@ The current backend exposes deliverable-related routes under:
 Examples include:
 
 ```text
-GET /api/deliverables/{id}
+GET /api/deliverables
 ```
 
-and:
+```text
+GET /api/deliverables/{id}
+```
 
 ```text
 GET /api/deliverables/{id}/demo-video
 ```
+
+The backend communicates with the external LabPortal API when required.
 
 The exact API behavior is implemented in:
 
@@ -618,9 +793,40 @@ when the backend is running.
 
 ---
 
+# External LabPortal Integration
+
+The backend communicates with the Digital Lab LabPortal API.
+
+The external API is used to retrieve:
+
+* Deliverable lists
+* Deliverable details
+* Demonstration videos
+
+The backend acts as an intermediary between the frontend and LabPortal.
+
+This provides several advantages:
+
+```text
+Frontend
+   │
+   ▼
+FastAPI
+   │
+   ├── Redis
+   │
+   └── LabPortal API
+```
+
+The frontend does not need direct access to the LabPortal API key.
+
+The LabPortal API key therefore remains server-side.
+
+---
+
 # UI Design
 
-The interface follows a modern government digital portal aesthetic.
+The interface follows a modern government digital portal aesthetic inspired by RTA-style digital interfaces.
 
 ## Design Principles
 
@@ -628,17 +834,26 @@ The interface follows a modern government digital portal aesthetic.
 * Professional
 * Accessible
 * Responsive
-* Minimal
 * Information-focused
+* Modern
+* Government-oriented
 
-The interface uses:
+The interface uses the RTA-inspired color system where appropriate.
 
-* White surfaces
-* Light gray backgrounds
-* Royal blue primary actions
-* Clear status indicators
-* Subtle borders
-* Minimal shadows
+Primary colors include:
+
+```text
+RTA Blue       #191C84
+RTA Blue Hover #13166E
+RTA Red        #D23527
+RTA Yellow     #FDB813
+RTA Green      #00AF54
+RTA Purple     #6F2D91
+RTA Cyan       #00B4BD
+Black          #000000
+```
+
+The application uses these colors selectively rather than applying the entire palette to every component.
 
 ---
 
@@ -764,6 +979,8 @@ rel="noopener noreferrer"
 
 Backend credentials are provided through environment variables rather than being embedded directly into frontend code.
 
+Redis is intended to remain on the internal application network and should not be publicly exposed.
+
 ---
 
 # Browser Support
@@ -870,7 +1087,7 @@ Builds the FastAPI backend container.
 
 ## `docker-compose.yml`
 
-Defines and orchestrates the frontend and backend containers.
+Defines and orchestrates the frontend, backend, and Redis containers.
 
 ## `nginx.conf`
 
@@ -884,34 +1101,41 @@ Configures Nginx to:
 
 # Production Deployment
 
-The current architecture is designed to support deployment as a containerized web application.
+The architecture is designed to support scaling beyond the initial internal deployment.
 
-Recommended production architecture:
+A larger deployment can evolve toward:
 
 ```text
-                    Internet / Internal Network
-                              │
-                              ▼
-                    ┌──────────────────┐
-                    │      Nginx       │
-                    │   HTTPS / Proxy  │
-                    └────────┬─────────┘
-                             │
-                 ┌───────────┴───────────┐
-                 │                       │
-                 ▼                       ▼
-          Static Frontend           FastAPI API
-             Container              Container
-                                         │
-                                         ▼
-                                    LabPortal API
+                         Users
+                           │
+                           ▼
+                    ┌───────────────┐
+                    │ Load Balancer │
+                    └───────┬───────┘
+                            │
+             ┌──────────────┼──────────────┐
+             │              │              │
+             ▼              ▼              ▼
+        FastAPI #1     FastAPI #2     FastAPI #3
+             │              │              │
+             └──────────────┼──────────────┘
+                            │
+                            ▼
+                    ┌───────────────┐
+                    │     Redis     │
+                    │ Shared Cache  │
+                    └───────┬───────┘
+                            │
+                            ▼
+                     LabPortal API
 ```
 
-The current Docker Compose setup is suitable for development, testing, demonstrations, and controlled internal deployment.
+Redis provides a shared cache across backend instances, allowing the application to scale horizontally without each backend process maintaining an isolated cache.
 
-Production deployment should additionally consider:
+Recommended production architecture should additionally consider:
 
 * HTTPS/TLS
+* Load balancing
 * Secure secret management
 * Production CORS configuration
 * Authentication and authorization
@@ -921,11 +1145,65 @@ Production deployment should additionally consider:
 * Error monitoring
 * Health checks
 * Container resource limits
-* Persistent data storage where required
+* Redis persistence requirements
+* Redis high availability
+* Database-backed storage where required
 * Automated testing
 * CI/CD
 * Production reverse-proxy configuration
 * Backup and recovery procedures
+* Monitoring and observability
+
+---
+
+# Scalability Direction
+
+The current architecture is intentionally simple, but it is designed so that individual components can be scaled independently.
+
+Potential scaling path:
+
+```text
+Current
+
+Nginx
+  │
+FastAPI
+  │
+Redis
+  │
+LabPortal
+```
+
+Future:
+
+```text
+                 Load Balancer
+                      │
+          ┌───────────┼───────────┐
+          ▼           ▼           ▼
+       API #1       API #2       API #3
+          │           │           │
+          └───────────┼───────────┘
+                      ▼
+                Redis Cluster
+                      │
+                      ▼
+                 LabPortal
+```
+
+This separation allows the backend layer to scale horizontally while maintaining a shared cache.
+
+Future infrastructure may also introduce:
+
+* Dedicated database services
+* Redis Sentinel or Redis Cluster
+* Background workers
+* Message queues
+* CDN/object storage for large media
+* API gateways
+* Centralized observability
+* Service-level authentication
+* Automated deployment pipelines
 
 ---
 
@@ -944,33 +1222,7 @@ The following are currently outside the scope of this release:
 
 These features may be introduced in future releases as separate backend services/modules.
 
----
-
-# Roadmap
-
-Potential future improvements include:
-
-* [ ] Connect PoC Gallery to production API
-* [ ] Replace static PoC dataset with production data
-* [ ] Add team member profile photos
-* [ ] Add PoC screenshots
-* [ ] Add additional video demonstrations
-* [ ] Add pagination
-* [ ] Add advanced search
-* [ ] Add sorting
-* [ ] Add PoC categories
-* [ ] Add favorites/bookmarks
-* [ ] Add analytics
-* [ ] Add authentication
-* [ ] Add administrative PoC management
-* [ ] Add database-backed storage
-* [ ] Add automated API synchronization
-* [ ] Add automated testing
-* [ ] Add CI/CD pipeline
-* [ ] Reintroduce AI functionality as a separate service
-* [ ] Add AI-powered PoC recommendations
-* [ ] Add AI-generated PoC summaries
-* [ ] Add AI risk assessment
+The current application also relies on the external LabPortal API as its primary source for deliverable information.
 
 ---
 
@@ -991,7 +1243,9 @@ Unless otherwise specified, all project code, data, assets, and documentation ar
 | **Role**         | AI & Machine Learning Intern                         |
 | **Organization** | Digital Lab Technology                               |
 | **Purpose**      | Centralized gallery for showcasing Proofs of Concept |
-| **Architecture** | Dockerized Nginx + FastAPI                           |
+| **Architecture** | Dockerized Nginx + FastAPI + Redis                   |
+| **Caching**      | Redis                                                |
+| **External API** | Digital Lab LabPortal                                |
 | **Status**       | Active Development                                   |
 
 > This project is intended for internal use by Digital Lab Technology.
