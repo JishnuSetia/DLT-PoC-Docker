@@ -6,6 +6,8 @@
 
     position: relative;
     z-index: 1;
+
+    animation: hero-enter 0.7s ease both;
 }
 
 /* =========================================================
@@ -13,53 +15,214 @@
 ========================================================= */
 
 .poc-details-container {
+    position: relative;
+
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
     gap: 48px;
 
-    /* Explicit solid white background */
-    background: #ffffff;
-    opacity: 1;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(17, 22, 35, 0.94),
+            rgba(9, 12, 20, 0.96)
+        );
 
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     padding: 40px;
+
+    box-shadow:
+        var(--shadow-lg),
+        0 0 70px rgba(25, 28, 132, 0.1);
+
+    backdrop-filter: blur(18px);
+
+    overflow: hidden;
 }
 
-.poc-left-column {
-    min-width: 0;
+
+/* faint scanline texture across the whole panel */
+
+.poc-details-container::before {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    background:
+        repeating-linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.012) 0px,
+            rgba(255, 255, 255, 0.012) 1px,
+            transparent 1px,
+            transparent 16px
+        );
+
+    pointer-events: none;
+
+    z-index: 0;
 }
 
-.poc-details-column {
-    min-width: 0;
+
+/* HUD corner brackets */
+
+.poc-details-container::after {
+    content: "";
+
+    position: absolute;
+
+    inset: 10px;
+
+    border-radius: 12px;
+
+    background-image:
+        linear-gradient(var(--rta-cyan), var(--rta-cyan)),
+        linear-gradient(var(--rta-cyan), var(--rta-cyan)),
+        linear-gradient(var(--rta-cyan), var(--rta-cyan)),
+        linear-gradient(var(--rta-cyan), var(--rta-cyan));
+
+    background-repeat: no-repeat;
+
+    background-size:
+        18px 2px,
+        2px 18px,
+        18px 2px,
+        2px 18px;
+
+    background-position:
+        top left,
+        top left,
+        bottom right,
+        bottom right;
+
+    opacity: 0.4;
+
+    pointer-events: none;
+
+    z-index: 0;
 }
 
-/* =========================================================
-   VIDEO COLUMN
-========================================================= */
 
+.poc-left-column,
+.poc-details-column,
 .poc-video-column {
+    position: relative;
+    z-index: 1;
+
     min-width: 0;
 }
+
 
 /* =========================================================
    VIDEO
 ========================================================= */
 
 .poc-video-wrapper {
+    position: relative;
+
     width: 100%;
+    max-width: 100%;
+
+    /* fallback size before metadata loads / for the placeholder */
     height: min(65vh, 650px);
+    max-height: min(65vh, 650px);
+
+    margin: 0 auto;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
     background: #000;
+    border: 1px solid var(--border);
     border-radius: var(--radius-md);
     overflow: hidden;
+
+    box-shadow:
+        0 0 0 1px rgba(0, 180, 189, 0.08),
+        var(--shadow-md);
+
+    transition:
+        width 0.35s ease,
+        height 0.35s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
 }
 
+/* once JS knows the real dimensions, it sets inline width/height
+   and adds this class — height becomes whatever JS calculated */
+.poc-video-wrapper.is-sized {
+    height: auto;
+}
+
+/* stricter cap for portrait clips so they don't tower over the column */
+.poc-video-wrapper.is-portrait {
+    max-width: 420px;
+}
+
+
+.poc-video-wrapper:hover {
+    border-color: rgba(0, 180, 189, 0.45);
+
+    box-shadow:
+        0 0 0 1px rgba(0, 180, 189, 0.18),
+        var(--shadow-cyan);
+}
+
+
+/* live/system indicator on the video panel */
+
+.poc-video-wrapper::before {
+    content: "";
+
+    position: absolute;
+
+    top: 14px;
+    left: 14px;
+
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: var(--rta-red);
+
+    box-shadow: 0 0 10px rgba(210, 53, 39, 0.7);
+
+    z-index: 2;
+
+    animation: dot-ping 1.6s ease-in-out infinite;
+}
+
+
+/* diagonal scanline texture over the video area */
+
+.poc-video-wrapper::after {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    background:
+        repeating-linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.02) 0px,
+            rgba(255, 255, 255, 0.02) 1px,
+            transparent 1px,
+            transparent 14px
+        );
+
+    pointer-events: none;
+
+    z-index: 1;
+}
+
+
 .poc-video {
+    position: relative;
+    z-index: 1;
+
     display: block;
 
     width: auto;
@@ -74,6 +237,9 @@
 /* Temporary video placeholder */
 
 .poc-video-placeholder {
+    position: relative;
+    z-index: 1;
+
     width: 100%;
     height: 100%;
 
@@ -88,9 +254,32 @@
 }
 
 .poc-video-placeholder-icon {
+    position: relative;
+
     font-size: 2.5rem;
     margin-bottom: 12px;
-    opacity: 0.6;
+    opacity: 0.7;
+
+    color: var(--rta-cyan);
+
+    filter: drop-shadow(0 0 14px rgba(0, 180, 189, 0.35));
+
+    animation: media-glow-pulse 3.2s ease-in-out infinite;
+}
+
+
+@keyframes media-glow-pulse {
+
+    0%,
+    100% {
+        opacity: 0.5;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.85;
+        transform: scale(1.06);
+    }
 }
 
 .poc-video-placeholder-title {
@@ -101,15 +290,12 @@
 
 .poc-video-placeholder-text {
     font-size: 0.9rem;
+    color: var(--text-muted);
 }
 
 /* =========================================================
    DETAILS COLUMN
 ========================================================= */
-
-.poc-details-column {
-    min-width: 0;
-}
 
 .poc-details-meta {
     display: flex;
@@ -119,11 +305,42 @@
 }
 
 .poc-details-container h1 {
+    position: relative;
+
     margin-bottom: 16px;
+
+    color: var(--text-primary);
 
     font-family: var(--font-heading);
     font-size: clamp(2rem, 4vw, 3rem);
     line-height: 1.2;
+    font-weight: 700;
+
+    animation: text-reveal 0.9s 0.1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+
+.poc-details-container h1::after {
+    content: "";
+
+    display: block;
+
+    width: 70px;
+    height: 3px;
+
+    margin-top: 16px;
+
+    border-radius: 4px;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--rta-blue),
+            var(--rta-cyan)
+        );
+
+    box-shadow:
+        0 0 16px rgba(0, 180, 189, 0.35);
 }
 
 .poc-details-description {
@@ -155,10 +372,36 @@
 }
 
 .details-section h2 {
+    display: flex;
+    align-items: center;
+
     margin-bottom: 16px;
+
+    color: var(--text-primary);
 
     font-family: var(--font-heading);
     font-size: 1.25rem;
+    font-weight: 700;
+}
+
+
+.details-section h2::before {
+    content: "";
+
+    display: inline-block;
+
+    width: 5px;
+    height: 5px;
+
+    margin-right: 9px;
+
+    border-radius: 50%;
+
+    background: var(--rta-cyan);
+
+    box-shadow: 0 0 9px rgba(0, 180, 189, 0.5);
+
+    animation: dot-ping 2.4s ease-in-out infinite;
 }
 
 /* =========================================================
@@ -169,15 +412,52 @@
 .loading-state {
     padding: 80px 24px;
     text-align: center;
+
+    color: var(--text-secondary);
+
+    animation: hero-enter 0.5s ease both;
 }
 
 .poc-error h1 {
     margin-bottom: 12px;
+
+    color: var(--text-primary);
+
+    font-family: var(--font-heading);
 }
 
 .poc-error p {
     margin-bottom: 24px;
     color: var(--text-secondary);
+}
+
+
+/* spinning loader ring for the loading state */
+
+.loading-state::before {
+    content: "";
+
+    display: block;
+
+    width: 42px;
+    height: 42px;
+
+    margin: 0 auto 20px;
+
+    border-radius: 50%;
+
+    border: 3px solid rgba(0, 180, 189, 0.15);
+    border-top-color: var(--rta-cyan);
+
+    animation: loader-spin 0.85s linear infinite;
+}
+
+
+@keyframes loader-spin {
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* =========================================================
@@ -219,18 +499,41 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 6px;
 
     padding: 6px 12px;
 
     border-radius: 999px;
 
+    font-family: var(--font-mono);
     font-size: 0.78rem;
     font-weight: 700;
     line-height: 1;
 
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+
     white-space: nowrap;
 
     border: 1px solid transparent;
+}
+
+
+.poc-details-meta .status-badge::before {
+    content: "";
+
+    width: 5px;
+    height: 5px;
+
+    flex: 0 0 auto;
+
+    border-radius: 50%;
+
+    background: currentColor;
+
+    box-shadow: 0 0 6px currentColor;
+
+    animation: dot-ping 1.8s ease-in-out infinite;
 }
 
 
@@ -239,9 +542,9 @@
 ========================================================= */
 
 .poc-details-meta .status-badge.not-started {
-    color: #64748b;
-    background: #f1f5f9;
-    border-color: #cbd5e1;
+    color: var(--text-muted);
+    background: rgba(127, 137, 155, 0.12);
+    border-color: rgba(127, 137, 155, 0.35);
 }
 
 
@@ -250,9 +553,9 @@
 ========================================================= */
 
 .poc-details-meta .status-badge.planning {
-    color: #92400e;
-    background: #fef3c7;
-    border-color: #fde68a;
+    color: var(--rta-cyan);
+    background: var(--info-soft);
+    border-color: rgba(0, 180, 189, 0.3);
 }
 
 
@@ -261,9 +564,9 @@
 ========================================================= */
 
 .poc-details-meta .status-badge.in-progress {
-    color: #1d4ed8;
-    background: #dbeafe;
-    border-color: #93c5fd;
+    color: var(--rta-yellow);
+    background: var(--warning-soft);
+    border-color: rgba(253, 184, 19, 0.3);
 }
 
 
@@ -272,9 +575,9 @@
 ========================================================= */
 
 .poc-details-meta .status-badge.review {
-    color: #7e22ce;
-    background: #f3e8ff;
-    border-color: #d8b4fe;
+    color: #c084fc;
+    background: rgba(111, 45, 145, 0.14);
+    border-color: rgba(111, 45, 145, 0.4);
 }
 
 
@@ -283,9 +586,9 @@
 ========================================================= */
 
 .poc-details-meta .status-badge.completed {
-    color: #166534;
-    background: #dcfce7;
-    border-color: #86efac;
+    color: var(--rta-green);
+    background: var(--success-soft);
+    border-color: rgba(0, 175, 84, 0.3);
 }
 
 
@@ -294,9 +597,9 @@
 ========================================================= */
 
 .poc-details-meta .status-badge.on-hold {
-    color: #b91c1c;
-    background: #fee2e2;
-    border-color: #fca5a5;
+    color: var(--rta-red);
+    background: var(--danger-soft);
+    border-color: rgba(210, 53, 39, 0.3);
 }
 
 
@@ -305,7 +608,7 @@
 ========================================================= */
 
 .poc-details-meta .status-badge.unknown {
-    color: #475569;
-    background: #f1f5f9;
-    border-color: #cbd5e1;
+    color: var(--text-muted);
+    background: rgba(127, 137, 155, 0.12);
+    border-color: rgba(127, 137, 155, 0.35);
 }

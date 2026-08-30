@@ -424,6 +424,7 @@ function renderPoC(poc) {
      * video has been inserted into the DOM.
      */
     setupVideoErrorHandler();
+    setupVideoSizing();
 
     setupShareButton();
 }
@@ -510,6 +511,94 @@ function setupVideoErrorHandler() {
 }
 
 /* =========================================================
+   VIDEO SIZING
+========================================================= */
+
+function setupVideoSizing() {
+
+    const video =
+        document.getElementById(
+            "poc-video"
+        );
+
+    const wrapper =
+        document.getElementById(
+            "poc-video-wrapper"
+        );
+
+    if (!video || !wrapper) {
+        return;
+    }
+
+    function applySize() {
+
+        const vw = video.videoWidth;
+        const vh = video.videoHeight;
+
+        if (!vw || !vh) {
+            return;
+        }
+
+        const isPortrait =
+            vh > vw;
+
+        const maxHeight =
+            Math.min(
+                window.innerHeight *
+                    (isPortrait ? 0.7 : 0.65),
+                650
+            );
+
+        /*
+         * Measure the column, not the wrapper itself,
+         * to avoid a resize feedback loop.
+         */
+        const availableWidth =
+            wrapper.parentElement.clientWidth;
+
+        const ratio = vw / vh;
+
+        let width = maxHeight * ratio;
+        let height = maxHeight;
+
+        if (width > availableWidth) {
+            width = availableWidth;
+            height = width / ratio;
+        }
+
+        wrapper.style.width =
+            `${Math.round(width)}px`;
+
+        wrapper.style.height =
+            `${Math.round(height)}px`;
+
+        wrapper.classList.add(
+            "is-sized"
+        );
+
+        wrapper.classList.toggle(
+            "is-portrait",
+            isPortrait
+        );
+    }
+
+    if (video.readyState >= 1) {
+        applySize();
+    } else {
+        video.addEventListener(
+            "loadedmetadata",
+            applySize,
+            { once: true }
+        );
+    }
+
+    window.addEventListener(
+        "resize",
+        applySize
+    );
+}
+
+/* =========================================================
    SHOW VIDEO PLACEHOLDER
 ========================================================= */
 
@@ -523,6 +612,14 @@ function showVideoPlaceholder() {
     if (!wrapper) {
         return;
     }
+
+    wrapper.style.width = "";
+    wrapper.style.height = "";
+
+    wrapper.classList.remove(
+        "is-sized",
+        "is-portrait"
+    );
 
     wrapper.innerHTML =
         renderVideoPlaceholder();

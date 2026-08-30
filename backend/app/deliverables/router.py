@@ -1,10 +1,14 @@
+import json
 import os
-import time
+
 import httpx
 
 from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
+
+from ..cache.redis import redis_client
+
 
 load_dotenv()
 
@@ -23,21 +27,16 @@ LABPORTAL_API_KEY = os.getenv("LABPORTAL_API_KEY")
 
 
 # =========================================================
-# CACHE
+# REDIS CACHE
 # =========================================================
 
 CACHE_TTL = 300  # 5 minutes
 
-
-# Cache for the full deliverables response
-deliverables_cache = {
-    "data": None,
-    "timestamp": 0,
-}
+DELIVERABLES_CACHE_KEY = "deliverables:all"
 
 
-# Cache for individual deliverables
-deliverable_cache = {}
+def deliverable_cache_key(deliverable_id: int) -> str:
+    return f"deliverables:{deliverable_id}"
 
 
 # =========================================================
@@ -49,7 +48,8 @@ async def fetch_labportal_deliverable(
     deliverable_id: int,
 ):
     response = await client.get(
-        f"{LABPORTAL_BASE_URL}/Deliverables/GetDeliverableDetails/{deliverable_id}",
+        f"{LABPORTAL_BASE_URL}"
+        f"/Deliverables/GetDeliverableDetails/{deliverable_id}",
         headers={
             "X-Api-Key": LABPORTAL_API_KEY,
         },
@@ -81,16 +81,15 @@ async def get_deliverables():
         )
 
     # -----------------------------------------------------
-    # CHECK CACHE
+    # CHECK REDIS CACHE
     # -----------------------------------------------------
 
-    current_time = time.time()
+    cached_data = await redis_client.get(
+        DELIVERABLES_CACHE_KEY
+    )
 
-    if (
-        deliverables_cache["data"] is not None
-        and current_time - deliverables_cache["timestamp"] < CACHE_TTL
-    ):
-        return deliverables_cache["data"]
+    if cached_data:
+        return json.loads(cached_data)
 
     # -----------------------------------------------------
     # FETCH FROM LABPORTAL
@@ -112,7 +111,10 @@ async def get_deliverables():
             if response.status_code != 200:
                 raise HTTPException(
                     status_code=response.status_code,
-                    detail="Failed to fetch deliverables from LabPortal",
+                    detail=(
+                        "Failed to fetch deliverables "
+                        "from LabPortal"
+                    ),
                 )
 
             data = response.json()
@@ -129,28 +131,23 @@ async def get_deliverables():
                 deliverable_id = item.get("id")
 
                 try:
-
-                    details = await fetch_labportal_deliverable(
-                        client,
-                        deliverable_id,
+                    details = (
+                        await fetch_labportal_deliverable(
+                            client,
+                            deliverable_id,
+                        )
                     )
 
                 except httpx.RequestError:
-
                     details = None
 
-                # Merge list response + details response.
-                # Details take precedence when available.
-
+                # Details take precedence
                 if details:
-
                     merged = {
                         **item,
                         **details,
                     }
-
                 else:
-
                     merged = item
 
                 enriched_items.append(merged)
@@ -159,11 +156,30 @@ async def get_deliverables():
             data["items"] = enriched_items
 
             # -------------------------------------------------
-            # SAVE TO CACHE
+            # SAVE FULL RESPONSE TO REDIS
             # -------------------------------------------------
 
-            deliverables_cache["data"] = data
-            deliverables_cache["timestamp"] = time.time()
+            await redis_client.setex(
+                DELIVERABLES_CACHE_KEY,
+                CACHE_TTL,
+                json.dumps(data),
+            )
+
+            # -------------------------------------------------
+            # CACHE INDIVIDUAL DELIVERABLES TOO
+            # -------------------------------------------------
+
+            for deliverable in enriched_items:
+
+                deliverable_id = deliverable.get("id")
+
+                if deliverable_id is not None:
+
+                    await redis_client.setex(
+                        deliverable_cache_key(deliverable_id),
+                        CACHE_TTL,
+                        json.dumps(deliverable),
+                    )
 
             return data
 
@@ -171,7 +187,9 @@ async def get_deliverables():
 
         raise HTTPException(
             status_code=502,
-            detail=f"Unable to connect to LabPortal: {exc}",
+            detail=(
+                f"Unable to connect to LabPortal: {exc}"
+            ),
         )
 
 
@@ -195,10 +213,6 @@ async def get_demo_video(id: int):
 
     try:
 
-        # -------------------------------------------------
-        # Request video from LabPortal
-        # -------------------------------------------------
-
         async with httpx.AsyncClient(
             timeout=None
         ) as client:
@@ -211,36 +225,25 @@ async def get_demo_video(id: int):
                 },
             )
 
-            # -------------------------------------------------
-            # Handle errors
-            # -------------------------------------------------
-
             if response.status_code == 404:
-
                 raise HTTPException(
                     status_code=404,
                     detail="Demo video not found",
                 )
 
             if response.status_code != 200:
-
                 raise HTTPException(
                     status_code=response.status_code,
-                    detail="Failed to fetch demo video from LabPortal",
+                    detail=(
+                        "Failed to fetch demo video "
+                        "from LabPortal"
+                    ),
                 )
-
-            # -------------------------------------------------
-            # Determine content type
-            # -------------------------------------------------
 
             content_type = response.headers.get(
                 "content-type",
                 "video/mp4",
             )
-
-            # -------------------------------------------------
-            # Return video to frontend
-            # -------------------------------------------------
 
             return StreamingResponse(
                 iter([response.content]),
@@ -250,7 +253,8 @@ async def get_demo_video(id: int):
                         len(response.content)
                     ),
                     "Content-Disposition": (
-                        f'inline; filename="deliverable-{id}.mp4"'
+                        f'inline; '
+                        f'filename="deliverable-{id}.mp4"'
                     ),
                 },
             )
@@ -259,7 +263,9 @@ async def get_demo_video(id: int):
 
         raise HTTPException(
             status_code=502,
-            detail=f"Unable to connect to LabPortal: {exc}",
+            detail=(
+                f"Unable to connect to LabPortal: {exc}"
+            ),
         )
 
 
@@ -276,24 +282,18 @@ async def get_deliverable_by_id(id: int):
             detail="LABPORTAL_API_KEY is not configured",
         )
 
+    cache_key = deliverable_cache_key(id)
+
     # -----------------------------------------------------
-    # CHECK CACHE
+    # CHECK REDIS CACHE
     # -----------------------------------------------------
 
-    current_time = time.time()
+    cached_data = await redis_client.get(
+        cache_key
+    )
 
-    cached = deliverable_cache.get(id)
-
-    if cached:
-
-        cached_data = cached["data"]
-        cached_timestamp = cached["timestamp"]
-
-        if current_time - cached_timestamp < CACHE_TTL:
-
-            return cached_data
-
-        del deliverable_cache[id]
+    if cached_data:
+        return json.loads(cached_data)
 
     # -----------------------------------------------------
     # FETCH FROM LABPORTAL
@@ -309,20 +309,20 @@ async def get_deliverable_by_id(id: int):
             )
 
             if data is None:
-
                 raise HTTPException(
                     status_code=404,
                     detail="Deliverable not found",
                 )
 
             # -------------------------------------------------
-            # SAVE TO CACHE
+            # SAVE TO REDIS
             # -------------------------------------------------
 
-            deliverable_cache[id] = {
-                "data": data,
-                "timestamp": time.time(),
-            }
+            await redis_client.setex(
+                cache_key,
+                CACHE_TTL,
+                json.dumps(data),
+            )
 
             return data
 
@@ -330,5 +330,7 @@ async def get_deliverable_by_id(id: int):
 
         raise HTTPException(
             status_code=502,
-            detail=f"Unable to connect to LabPortal: {exc}",
+            detail=(
+                f"Unable to connect to LabPortal: {exc}"
+            ),
         )

@@ -984,7 +984,7 @@ function renderPoCs(data) {
 
 
                 <span class="view-details-button">
-                    View Details →
+                    View Details 
                 </span>
 
             </div>
