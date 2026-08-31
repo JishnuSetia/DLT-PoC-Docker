@@ -32,68 +32,120 @@
         <main class="main-content">
 
             <section class="filter-bar" role="search" aria-label="Filter proof-of-concepts">
+
+                <!-- SEARCH -->
                 <div class="search-container">
+
                     <label for="search-input">Search</label>
+
                     <input
                         type="text"
                         id="search-input"
                         placeholder="Search PoCs..."
                         autocomplete="off"
                     >
+
                 </div>
 
+
+                <!-- AGENCY -->
                 <div class="filter-container">
-                    <label for="agency-filter">Agency</label>
-                    <select id="agency-filter">
-                        <option value="all">All Agencies</option>
-                    </select>
-                </div>
 
-                <div class="filter-container">
-                <label>
-                    Technology
-                </label>
+                    <label>Agency</label>
 
-                <!-- CHANGED CLASS NAME -->
-                <div
-                    class="technology-multi-select"
-                    id="technology-multi-select"
-                >
-
-                    <!-- CHANGED CLASS NAME -->
-                    <button
-                        type="button"
-                        class="technology-trigger"
-                        id="technology-trigger"
+                    <div
+                        class="filter-multi-select"
+                        id="agency-multi-select"
                     >
 
-                        <span id="technology-selected-text">
-                            All Technologies
-                        </span>
+                        <button
+                            type="button"
+                            class="filter-trigger"
+                            id="agency-trigger"
+                        >
 
-                        <!-- Removed separate arrow span since CSS handles it via ::after -->
+                            <span id="agency-selected-text">
+                                All Agencies
+                            </span>
 
-                    </button>
+                        </button>
 
-                    <!-- CHANGED CLASS NAME -->
-                    <div
-                        class="technology-menu"
-                        id="technology-menu"
-                        hidden
-                    ></div>
+                        <div
+                            class="filter-menu"
+                            id="agency-menu"
+                            hidden
+                        ></div>
+
+                    </div>
 
                 </div>
-            </div>
 
+
+                <!-- TECHNOLOGY -->
                 <div class="filter-container">
-                    <label for="status-filter">Status</label>
-                    <select id="status-filter">
-                        <option value="all">All Statuses</option>
-                        <option value="Complete">Complete</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Planning">Planning</option>
-                    </select>
+
+                    <label>Technology</label>
+
+                    <div
+                        class="filter-multi-select"
+                        id="technology-multi-select"
+                    >
+
+                        <button
+                            type="button"
+                            class="filter-trigger"
+                            id="technology-trigger"
+                        >
+
+                            <span id="technology-selected-text">
+                                All Technologies
+                            </span>
+
+                        </button>
+
+                        <div
+                            class="filter-menu"
+                            id="technology-menu"
+                            hidden
+                        ></div>
+
+                    </div>
+
                 </div>
+
+
+                <!-- STATUS -->
+                <div class="filter-container">
+
+                    <label>Status</label>
+
+                    <div
+                        class="filter-multi-select"
+                        id="status-multi-select"
+                    >
+
+                        <button
+                            type="button"
+                            class="filter-trigger"
+                            id="status-trigger"
+                        >
+
+                            <span id="status-selected-text">
+                                All Statuses
+                            </span>
+
+                        </button>
+
+                        <div
+                            class="filter-menu"
+                            id="status-menu"
+                            hidden
+                        ></div>
+
+                    </div>
+
+                </div>
+
             </section>
 
             <section class="dashboard">

@@ -3,7 +3,10 @@
 ========================================================= */
 
 let pocData = [];
+
+let selectedAgencies = [];
 let selectedTechnologies = [];
+let selectedStatuses = [];
 
 
 /* =========================================================
@@ -47,18 +50,6 @@ const temporaryTeamMembers = [
    POC-SPECIFIC TEAMS
 ========================================================= */
 
-/*
-    IMPORTANT:
-
-    Your PoC 1 has API ID = 7.
-
-    Therefore the key MUST be 7, not 1.
-
-    This PoC will ALWAYS show exactly these 2 people.
-
-    Replace the names and photo paths with the real values.
-*/
-
 const pocSpecificTeams = {
 
     7: [
@@ -86,38 +77,30 @@ const pocSpecificTeams = {
 
 function getRandomDummyTeam() {
 
-    /*
-        Create a copy so the original list
-        is never modified.
-    */
-
     const shuffled = [...temporaryTeamMembers];
-
-
-    /*
-        Fisher-Yates shuffle.
-    */
 
     for (let i = shuffled.length - 1; i > 0; i--) {
 
-        const j = Math.floor(
-            Math.random() * (i + 1)
-        );
+        const j =
+            Math.floor(
+                Math.random() * (i + 1)
+            );
 
         [shuffled[i], shuffled[j]] =
             [shuffled[j], shuffled[i]];
 
     }
 
-
-    /*
-        Randomly choose between 1 and 4 people.
-    */
-
     const count =
-        Math.floor(Math.random() * 4) + 1;
+        Math.floor(
+            Math.random() * 4
+        ) + 1;
 
-    return shuffled.slice(0, count);
+    return shuffled.slice(
+        0,
+        count
+    );
+
 }
 
 
@@ -127,109 +110,94 @@ function getRandomDummyTeam() {
 
 function getTeamForPoC(poc) {
 
-    /*
-        Get the actual API ID.
-
-        Example:
-        PoC 1 -> API ID 7
-    */
-
-    const pocId = Number(poc?.id);
+    const pocId =
+        Number(
+            poc?.id
+        );
 
 
-    /*
-        -----------------------------------------------------
-        1. CHECK POC-SPECIFIC TEAM FIRST
-        -----------------------------------------------------
+    /* -----------------------------------------------------
+       1. POC-SPECIFIC TEAM
+    ----------------------------------------------------- */
 
-        If this PoC has a manually configured team,
-        ALWAYS use it.
-
-        This takes priority over:
-        - API team members
-        - random temporary team members
-    */
-
-    const specificTeam = pocSpecificTeams[pocId];
+    const specificTeam =
+        pocSpecificTeams[pocId];
 
     if (
         Array.isArray(specificTeam) &&
         specificTeam.length > 0
     ) {
 
-        console.log(
-            `Using specific team for PoC ID ${pocId}:`,
-            specificTeam
-        );
-
         return specificTeam;
+
     }
 
 
-    /*
-        -----------------------------------------------------
-        2. CHECK API TEAM MEMBERS
-        -----------------------------------------------------
-    */
+    /* -----------------------------------------------------
+       2. API TEAM MEMBERS
+    ----------------------------------------------------- */
 
-    const team = poc?.team;
+    const team =
+        poc?.team;
 
     if (
         Array.isArray(team) &&
         team.length > 0
     ) {
 
-        const usableMembers = team.filter(
-            member => {
+        const usableMembers =
+            team.filter(
+                member => {
 
-                if (
-                    !member ||
-                    typeof member !== "object"
-                ) {
-                    return false;
+                    if (
+                        !member ||
+                        typeof member !== "object"
+                    ) {
+
+                        return false;
+
+                    }
+
+                    const hasName =
+                        member.firstName ||
+                        member.lastName ||
+                        member.name ||
+                        member.fullName ||
+                        member.displayName;
+
+                    const hasPicture =
+                        member.pictureUrl ||
+                        member.avatar ||
+                        member.avatarUrl ||
+                        member.photo ||
+                        member.photoUrl;
+
+                    return (
+                        hasName ||
+                        hasPicture
+                    );
+
                 }
-
-                const hasName =
-                    member.firstName ||
-                    member.lastName ||
-                    member.name ||
-                    member.fullName ||
-                    member.displayName;
-
-                const hasPicture =
-                    member.pictureUrl ||
-                    member.avatar ||
-                    member.avatarUrl ||
-                    member.photo ||
-                    member.photoUrl;
-
-                return hasName || hasPicture;
-            }
-        );
-
-        if (usableMembers.length > 0) {
-
-            console.log(
-                `Using API team for PoC ID ${pocId}:`,
-                usableMembers
             );
 
+
+        if (
+            usableMembers.length > 0
+        ) {
+
             return usableMembers;
+
         }
+
     }
 
 
-    /*
-        -----------------------------------------------------
-        3. FALLBACK TO RANDOM TEMPORARY TEAM
-        -----------------------------------------------------
-    */
-
-    console.log(
-        `Using random temporary team for PoC ID ${pocId}.`
-    );
+    /* -----------------------------------------------------
+       3. RANDOM TEMPORARY TEAM
+    ----------------------------------------------------- */
 
     return getRandomDummyTeam();
+
 }
 
 
@@ -238,37 +206,130 @@ function getTeamForPoC(poc) {
 ========================================================= */
 
 const pocGrid =
-    document.getElementById("poc-grid");
+    document.getElementById(
+        "poc-grid"
+    );
 
 const pocCount =
-    document.getElementById("poc-count");
+    document.getElementById(
+        "poc-count"
+    );
 
 const emptyState =
-    document.getElementById("empty-state");
+    document.getElementById(
+        "empty-state"
+    );
 
 const searchInput =
-    document.getElementById("search-input");
-
-const agencyFilter =
-    document.getElementById("agency-filter");
-
-const technologyMultiSelect =
-    document.getElementById("technology-multi-select");
-
-const technologyTrigger =
-    document.getElementById("technology-trigger");
-
-const technologyMenu =
-    document.getElementById("technology-menu");
-
-const technologySelectedText =
-    document.getElementById("technology-selected-text");
-
-const statusFilter =
-    document.getElementById("status-filter");
+    document.getElementById(
+        "search-input"
+    );
 
 const refreshButton =
-    document.getElementById("refresh-button");
+    document.getElementById(
+        "refresh-button"
+    );
+
+
+/* =========================================================
+   FILTER CONFIGURATION
+========================================================= */
+
+const filterConfigs = {
+
+    agency: {
+
+        container:
+            document.getElementById(
+                "agency-multi-select"
+            ),
+
+        trigger:
+            document.getElementById(
+                "agency-trigger"
+            ),
+
+        menu:
+            document.getElementById(
+                "agency-menu"
+            ),
+
+        selectedText:
+            document.getElementById(
+                "agency-selected-text"
+            ),
+
+        allText:
+            "All Agencies",
+
+        selectedLabel:
+            "Agencies"
+
+    },
+
+
+    technology: {
+
+        container:
+            document.getElementById(
+                "technology-multi-select"
+            ),
+
+        trigger:
+            document.getElementById(
+                "technology-trigger"
+            ),
+
+        menu:
+            document.getElementById(
+                "technology-menu"
+            ),
+
+        selectedText:
+            document.getElementById(
+                "technology-selected-text"
+            ),
+
+        allText:
+            "All Technologies",
+
+        selectedLabel:
+            "Technologies"
+
+    },
+
+
+    status: {
+
+        container:
+            document.getElementById(
+                "status-multi-select"
+            ),
+
+        trigger:
+            document.getElementById(
+                "status-trigger"
+            ),
+
+        menu:
+            document.getElementById(
+                "status-menu"
+            ),
+
+        selectedText:
+            document.getElementById(
+                "status-selected-text"
+            ),
+
+        allText:
+            "All Statuses",
+
+        selectedLabel:
+            "Statuses"
+
+    }
+
+};
 
 
 /* =========================================================
@@ -285,34 +346,75 @@ if (!pocGrid) {
 
 
 /* =========================================================
-   TECHNOLOGY DROPDOWN
+   SETUP MULTI-SELECT DROPDOWNS
 ========================================================= */
 
-if (
-    technologyTrigger &&
-    technologyMenu
+function setupMultiSelect(
+    config
 ) {
 
-    technologyTrigger.addEventListener(
+    if (
+        !config ||
+        !config.container ||
+        !config.trigger ||
+        !config.menu
+    ) {
+
+        return;
+
+    }
+
+
+    config.trigger.addEventListener(
         "click",
         event => {
 
             event.stopPropagation();
 
-            const isOpen =
-                !technologyMenu.hidden;
 
-            technologyMenu.hidden =
+            const isOpen =
+                !config.menu.hidden;
+
+
+            /*
+                Close every other dropdown.
+            */
+
+            Object.values(
+                filterConfigs
+            ).forEach(
+                otherConfig => {
+
+                    if (
+                        otherConfig !== config &&
+                        otherConfig.menu &&
+                        otherConfig.container
+                    ) {
+
+                        otherConfig.menu.hidden =
+                            true;
+
+                        otherConfig.container.classList.remove(
+                            "open"
+                        );
+
+                    }
+
+                }
+            );
+
+
+            /*
+                Toggle current dropdown.
+            */
+
+            config.menu.hidden =
                 isOpen;
 
-            if (technologyMultiSelect) {
-
-                technologyMultiSelect.classList.toggle(
-                    "open",
-                    !isOpen
-                );
-
-            }
+            config.container.classList.toggle(
+                "open",
+                !isOpen
+            );
 
         }
     );
@@ -321,31 +423,62 @@ if (
 
 
 /* =========================================================
-   CLOSE TECHNOLOGY DROPDOWN
+   INITIALIZE ALL MULTI-SELECTS
+========================================================= */
+
+Object.values(
+    filterConfigs
+).forEach(
+    config => {
+
+        setupMultiSelect(
+            config
+        );
+
+    }
+);
+
+
+/* =========================================================
+   CLOSE FILTER DROPDOWNS
 ========================================================= */
 
 document.addEventListener(
     "click",
     event => {
 
-        if (
-            technologyMultiSelect &&
-            !technologyMultiSelect.contains(
-                event.target
-            )
-        ) {
+        Object.values(
+            filterConfigs
+        ).forEach(
+            config => {
 
-            if (technologyMenu) {
+                if (
+                    !config.container ||
+                    !config.menu
+                ) {
 
-                technologyMenu.hidden = true;
+                    return;
+
+                }
+
+
+                if (
+                    !config.container.contains(
+                        event.target
+                    )
+                ) {
+
+                    config.menu.hidden =
+                        true;
+
+                    config.container.classList.remove(
+                        "open"
+                    );
+
+                }
 
             }
-
-            technologyMultiSelect.classList.remove(
-                "open"
-            );
-
-        }
+        );
 
     }
 );
@@ -355,7 +488,9 @@ document.addEventListener(
    DELIVERABLE STATUS MAPPING
 ========================================================= */
 
-function displayDeliverableStatus(status) {
+function displayDeliverableStatus(
+    status
+) {
 
     const statuses = {
 
@@ -368,7 +503,12 @@ function displayDeliverableStatus(status) {
 
     };
 
-    return statuses[status] || "Unknown";
+
+    return (
+        statuses[status] ||
+        "Unknown"
+    );
+
 }
 
 
@@ -380,12 +520,13 @@ async function loadPoCData() {
 
     try {
 
-        const response = await fetch(
-            "/api/deliverables",
-            {
-                cache: "no-cache"
-            }
-        );
+        const response =
+            await fetch(
+                "/api/deliverables",
+                {
+                    cache: "no-cache"
+                }
+            );
 
 
         if (!response.ok) {
@@ -403,7 +544,9 @@ async function loadPoCData() {
 
         if (
             !data ||
-            !Array.isArray(data.items)
+            !Array.isArray(
+                data.items
+            )
         ) {
 
             throw new Error(
@@ -414,8 +557,8 @@ async function loadPoCData() {
 
 
         /*
-            Convert LabPortal API data into
-            the format expected by the UI.
+            Convert LabPortal API data
+            into the UI format.
         */
 
         pocData =
@@ -426,13 +569,16 @@ async function loadPoCData() {
                         deliverable.id,
 
                     code:
-                        deliverable.code || "",
+                        deliverable.code ||
+                        "",
 
                     title:
-                        deliverable.title || "",
+                        deliverable.title ||
+                        "",
 
                     description:
-                        deliverable.description || "",
+                        deliverable.description ||
+                        "",
 
                     status:
                         displayDeliverableStatus(
@@ -445,7 +591,9 @@ async function loadPoCData() {
 
                     technologies:
                         deliverable.technology
-                            ? [deliverable.technology]
+                            ? [
+                                deliverable.technology
+                            ]
                             : [],
 
                     team:
@@ -456,22 +604,28 @@ async function loadPoCData() {
                             : [],
 
                     imageUrl:
-                        deliverable.imageUrl || "",
+                        deliverable.imageUrl ||
+                        "",
 
                     demoVideoUrl:
-                        deliverable.demoVideoUrl || "",
+                        deliverable.demoVideoUrl ||
+                        "",
 
                     pocUrl:
-                        deliverable.pocUrl || "",
+                        deliverable.pocUrl ||
+                        "",
 
                     benefits:
-                        deliverable.benefits || "",
+                        deliverable.benefits ||
+                        "",
 
                     stages:
-                        deliverable.stages || [],
+                        deliverable.stages ||
+                        [],
 
                     isMilestone:
-                        deliverable.isMilestone || false,
+                        deliverable.isMilestone ||
+                        false,
 
                     startDateTime:
                         deliverable.startDateTime,
@@ -483,10 +637,12 @@ async function loadPoCData() {
                         deliverable.expectedDate,
 
                     ownerName:
-                        deliverable.ownerName || "",
+                        deliverable.ownerName ||
+                        "",
 
                     ownerEmail:
-                        deliverable.ownerEmail || "",
+                        deliverable.ownerEmail ||
+                        "",
 
                     deliverableEvent:
                         deliverable.deliverableEvent,
@@ -523,42 +679,53 @@ async function loadPoCData() {
 
 
 /* =========================================================
-   HELPERS
+   STATUS CLASS
 ========================================================= */
 
-
-/*
-    Convert status text into a CSS-safe class.
-*/
-
-function statusClassFor(status) {
+function statusClassFor(
+    status
+) {
 
     const normalized =
-        String(status || "")
-            .trim()
-            .toLowerCase();
+        String(
+            status || ""
+        )
+        .trim()
+        .toLowerCase();
 
-    switch (normalized) {
+
+    switch (
+        normalized
+    ) {
 
         case "completed":
         case "complete":
+
             return "complete";
+
 
         case "in progress":
         case "progress":
         case "in-progress":
+
             return "progress";
+
 
         case "on hold":
         case "on-hold":
+
             return "blocked";
 
+
         case "review":
+
             return "review";
+
 
         case "not started":
         case "planning":
         default:
+
             return "planning";
 
     }
@@ -566,11 +733,13 @@ function statusClassFor(status) {
 }
 
 
-/*
-    Get display-friendly status text.
-*/
+/* =========================================================
+   DISPLAY STATUS
+========================================================= */
 
-function displayStatus(status) {
+function displayStatus(
+    status
+) {
 
     if (!status) {
 
@@ -578,35 +747,47 @@ function displayStatus(status) {
 
     }
 
-    return String(status);
+
+    return String(
+        status
+    );
 
 }
 
 
-/*
-    Escape HTML.
-*/
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
 
-function escapeHTML(value) {
+function escapeHTML(
+    value
+) {
 
     const div =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
     div.textContent =
         value ?? "";
+
 
     return div.innerHTML;
 
 }
 
 
-/*
-    Escape attribute values.
-*/
+/* =========================================================
+   ESCAPE ATTRIBUTES
+========================================================= */
 
-function escapeAttribute(value) {
+function escapeAttribute(
+    value
+) {
 
-    return escapeHTML(value);
+    return escapeHTML(
+        value
+    );
 
 }
 
@@ -615,16 +796,6 @@ function escapeAttribute(value) {
    SHARED POC URL
 ========================================================= */
 
-/*
-    Supports old shared URLs like:
-
-    index.html?poc=123
-
-    Redirects them to:
-
-    poc.html?id=123
-*/
-
 function openSharedPoC() {
 
     const params =
@@ -632,8 +803,11 @@ function openSharedPoC() {
             window.location.search
         );
 
+
     const pocId =
-        params.get("poc");
+        params.get(
+            "poc"
+        );
 
 
     if (!pocId) {
@@ -653,7 +827,9 @@ function openSharedPoC() {
    RENDER POC CARDS
 ========================================================= */
 
-function renderPoCs(data) {
+function renderPoCs(
+    data
+) {
 
     if (!pocGrid) {
 
@@ -666,7 +842,8 @@ function renderPoCs(data) {
         Clear existing cards.
     */
 
-    pocGrid.innerHTML = "";
+    pocGrid.innerHTML =
+        "";
 
 
     /*
@@ -689,11 +866,14 @@ function renderPoCs(data) {
         Empty state.
     */
 
-    if (data.length === 0) {
+    if (
+        data.length === 0
+    ) {
 
         if (emptyState) {
 
-            emptyState.hidden = false;
+            emptyState.hidden =
+                false;
 
         }
 
@@ -704,7 +884,8 @@ function renderPoCs(data) {
 
     if (emptyState) {
 
-        emptyState.hidden = true;
+        emptyState.hidden =
+            true;
 
     }
 
@@ -713,288 +894,295 @@ function renderPoCs(data) {
         Create cards.
     */
 
-    data.forEach(poc => {
+    data.forEach(
+        poc => {
 
-        const card =
-            document.createElement("article");
-
-
-        const status =
-            displayStatus(poc.status);
-
-        const statusClass =
-            statusClassFor(status);
+            const card =
+                document.createElement(
+                    "article"
+                );
 
 
-        card.className =
-            `poc-card status-${statusClass}`;
+            const status =
+                displayStatus(
+                    poc.status
+                );
 
 
-        /*
-            Make entire card clickable.
-        */
-
-        card.setAttribute(
-            "role",
-            "link"
-        );
-
-        card.setAttribute(
-            "tabindex",
-            "0"
-        );
+            const statusClass =
+                statusClassFor(
+                    status
+                );
 
 
-        card.addEventListener(
-            "click",
-            () => {
-
-                window.location.href =
-                    `poc.html?id=${encodeURIComponent(poc.id)}`;
-
-            }
-        );
+            card.className =
+                `poc-card status-${statusClass}`;
 
 
-        /*
-            Keyboard accessibility.
-        */
+            /*
+                Entire card clickable.
+            */
 
-        card.addEventListener(
-            "keydown",
-            event => {
+            card.setAttribute(
+                "role",
+                "link"
+            );
 
-                if (
-                    event.key === "Enter" ||
-                    event.key === " "
-                ) {
+            card.setAttribute(
+                "tabindex",
+                "0"
+            );
 
-                    event.preventDefault();
+
+            card.addEventListener(
+                "click",
+                () => {
 
                     window.location.href =
                         `poc.html?id=${encodeURIComponent(poc.id)}`;
 
                 }
-
-            }
-        );
+            );
 
 
-        /* =================================================
-           TECHNOLOGIES
-        ================================================= */
+            /*
+                Keyboard accessibility.
+            */
 
-        const technologies =
-            Array.isArray(poc.technologies)
-                ? poc.technologies
-                : [];
+            card.addEventListener(
+                "keydown",
+                event => {
+
+                    if (
+                        event.key === "Enter" ||
+                        event.key === " "
+                    ) {
+
+                        event.preventDefault();
 
 
-        const technologyHTML =
-            technologies
-                .map(
-                    technology => {
-
-                        return `
-                            <span class="tech-badge">
-                                ${escapeHTML(technology)}
-                            </span>
-                        `;
+                        window.location.href =
+                            `poc.html?id=${encodeURIComponent(poc.id)}`;
 
                     }
+
+                }
+            );
+
+
+            /* =================================================
+               TECHNOLOGIES
+            ================================================= */
+
+            const technologies =
+                Array.isArray(
+                    poc.technologies
                 )
-                .join("");
+                    ? poc.technologies
+                    : [];
 
 
-        /* =================================================
-           TEAM MEMBERS
-        ================================================= */
+            const technologyHTML =
+                technologies
+                    .map(
+                        technology => {
 
-        /*
-            Get:
+                            return `
+                                <span class="tech-badge">
+                                    ${escapeHTML(technology)}
+                                </span>
+                            `;
 
-            1. Specific team for PoC if configured
-            2. API team members
-            3. Random temporary team
-
-            IMPORTANT:
-            PoC ID 7 has a specific team,
-            so it will ALWAYS get exactly 2 people.
-        */
-
-        const team =
-            getTeamForPoC(poc);
+                        }
+                    )
+                    .join("");
 
 
-        const maxVisibleMembers = 4;
+            /* =================================================
+               TEAM MEMBERS
+            ================================================= */
+
+            const team =
+                getTeamForPoC(
+                    poc
+                );
 
 
-        const visibleTeam =
-            team.slice(
-                0,
-                maxVisibleMembers
-            );
+            const maxVisibleMembers =
+                4;
 
 
-        const remainingMembers =
-            Math.max(
-                team.length -
-                maxVisibleMembers,
-                0
-            );
+            const visibleTeam =
+                team.slice(
+                    0,
+                    maxVisibleMembers
+                );
 
 
-        /*
-            Render team avatars.
-        */
-
-        const teamHTML =
-            visibleTeam
-                .map(
-                    member => {
-
-                        const fullName =
-                            `${member.firstName || ""} ${member.lastName || ""}`
-                                .trim();
+            const remainingMembers =
+                Math.max(
+                    team.length -
+                    maxVisibleMembers,
+                    0
+                );
 
 
-                        const name =
-                            fullName ||
-                            member.name ||
-                            member.fullName ||
-                            member.displayName ||
-                            "Team Member";
+            /*
+                Render team avatars.
+            */
+
+            const teamHTML =
+                visibleTeam
+                    .map(
+                        member => {
+
+                            const fullName =
+                                `${member.firstName || ""} ${member.lastName || ""}`
+                                    .trim();
 
 
-                        const avatar =
-                            member.pictureUrl ||
-                            member.avatar ||
-                            member.avatarUrl ||
-                            member.photo ||
-                            member.photoUrl ||
-                            "assets/tmp-avatar.jpg";
+                            const name =
+                                fullName ||
+                                member.name ||
+                                member.fullName ||
+                                member.displayName ||
+                                "Team Member";
 
 
-                        return `
-                            <div
-                                class="team-avatar"
-                                title="${escapeAttribute(name)}"
-                            >
+                            const avatar =
+                                member.pictureUrl ||
+                                member.avatar ||
+                                member.avatarUrl ||
+                                member.photo ||
+                                member.photoUrl ||
+                                "assets/tmp-avatar.jpg";
 
-                                <img
-                                    src="${escapeAttribute(avatar)}"
-                                    alt="${escapeAttribute(name)}"
-                                    loading="lazy"
-                                    onerror="
-                                        this.onerror=null;
-                                        this.src='assets/tmp-avatar.jpg';
-                                    "
+
+                            return `
+                                <div
+                                    class="team-avatar"
+                                    title="${escapeAttribute(name)}"
                                 >
 
-                            </div>
-                        `;
+                                    <img
+                                        src="${escapeAttribute(avatar)}"
+                                        alt="${escapeAttribute(name)}"
+                                        loading="lazy"
+                                        onerror="
+                                            this.onerror=null;
+                                            this.src='assets/tmp-avatar.jpg';
+                                        "
+                                    >
 
-                    }
-                )
-                .join("");
+                                </div>
+                            `;
+
+                        }
+                    )
+                    .join("");
 
 
-        /*
-            +N indicator for additional members.
-        */
+            /*
+                Additional team member indicator.
+            */
 
-        const remainingHTML =
-            remainingMembers > 0
-                ? `
-                    <div
-                        class="team-avatar team-avatar-more"
-                        title="${remainingMembers} more ${
-                            remainingMembers === 1
-                                ? "member"
-                                : "members"
-                        }"
-                    >
-                        +${remainingMembers}
+            const remainingHTML =
+                remainingMembers > 0
+                    ? `
+                        <div
+                            class="team-avatar team-avatar-more"
+                            title="${remainingMembers} more ${
+                                remainingMembers === 1
+                                    ? "member"
+                                    : "members"
+                            }"
+                        >
+                            +${remainingMembers}
+                        </div>
+                    `
+                    : "";
+
+
+            /* =================================================
+               AGENCY
+            ================================================= */
+
+            const agency =
+                poc.agency ||
+                "Digital Lab";
+
+
+            /* =================================================
+               CARD HTML
+            ================================================= */
+
+            card.innerHTML = `
+
+                <div class="poc-status-line"></div>
+
+                <div class="poc-card-content">
+
+                    <div class="poc-card-top">
+
+                        <span class="poc-agency">
+                            ${escapeHTML(agency)}
+                        </span>
+
+                        <span
+                            class="status-badge ${statusClass}"
+                        >
+                            ${escapeHTML(status)}
+                        </span>
+
                     </div>
-                `
-                : "";
 
 
-        /* =================================================
-           AGENCY
-        ================================================= */
-
-        const agency =
-            poc.agency ||
-            "Digital Lab";
+                    <h3>
+                        ${escapeHTML(
+                            poc.title
+                        )}
+                    </h3>
 
 
-        /* =================================================
-           CARD HTML
-        ================================================= */
+                    <p class="poc-card-description">
+                        ${escapeHTML(
+                            poc.description || ""
+                        )}
+                    </p>
 
-        card.innerHTML = `
 
-            <div class="poc-status-line"></div>
+                    <div class="poc-technologies">
+                        ${technologyHTML}
+                    </div>
 
-            <div class="poc-card-content">
+                </div>
 
-                <div class="poc-card-top">
 
-                    <span class="poc-agency">
-                        ${escapeHTML(agency)}
+                <div class="poc-card-footer">
+
+                    <div class="team-avatars">
+
+                        ${teamHTML}
+                        ${remainingHTML}
+
+                    </div>
+
+
+                    <span class="view-details-button">
+                        View Details
                     </span>
 
-                    <span
-                        class="status-badge ${statusClass}"
-                    >
-                        ${escapeHTML(status)}
-                    </span>
-
                 </div>
 
-
-                <h3>
-                    ${escapeHTML(poc.title)}
-                </h3>
+            `;
 
 
-                <p class="poc-card-description">
-                    ${escapeHTML(
-                        poc.description || ""
-                    )}
-                </p>
+            pocGrid.appendChild(
+                card
+            );
 
-
-                <div class="poc-technologies">
-                    ${technologyHTML}
-                </div>
-
-            </div>
-
-
-            <div class="poc-card-footer">
-
-                <div class="team-avatars">
-
-                    ${teamHTML}
-                    ${remainingHTML}
-
-                </div>
-
-
-                <span class="view-details-button">
-                    View Details 
-                </span>
-
-            </div>
-
-        `;
-
-
-        pocGrid.appendChild(card);
-
-    });
+        }
+    );
 
 }
 
@@ -1011,9 +1199,16 @@ function populateFilters() {
     const technologies =
         new Set();
 
+    const statuses =
+        new Set();
+
 
     pocData.forEach(
         poc => {
+
+            /* -------------------------------------------------
+               AGENCY
+            ------------------------------------------------- */
 
             if (poc.agency) {
 
@@ -1024,6 +1219,10 @@ function populateFilters() {
             }
 
 
+            /* -------------------------------------------------
+               TECHNOLOGIES
+            ------------------------------------------------- */
+
             if (
                 Array.isArray(
                     poc.technologies
@@ -1033,150 +1232,406 @@ function populateFilters() {
                 poc.technologies.forEach(
                     technology => {
 
-                        technologies.add(
-                            technology
-                        );
+                        if (technology) {
+
+                            technologies.add(
+                                technology
+                            );
+
+                        }
 
                     }
                 );
 
             }
 
+
+            /* -------------------------------------------------
+               STATUS
+            ------------------------------------------------- */
+
+            if (poc.status) {
+
+                statuses.add(
+                    displayStatus(
+                        poc.status
+                    )
+                );
+
+            }
+
         }
     );
 
 
-    /* =====================================================
-       AGENCIES
-    ===================================================== */
+    /*
+        Render Agency options.
+    */
 
-    if (agencyFilter) {
-
-        agencyFilter.innerHTML = `
-
-            <option value="all">
-                All Agencies
-            </option>
-
-        `;
+    renderFilterOptions(
+        filterConfigs.agency,
+        [...agencies].sort(),
+        "agency"
+    );
 
 
-        [...agencies]
-            .sort()
-            .forEach(
-                agency => {
+    /*
+        Render Technology options.
+    */
 
-                    const option =
-                        document.createElement(
-                            "option"
-                        );
-
-                    option.value =
-                        agency;
-
-                    option.textContent =
-                        agency;
-
-                    agencyFilter.appendChild(
-                        option
-                    );
-
-                }
-            );
-
-    }
+    renderFilterOptions(
+        filterConfigs.technology,
+        [...technologies].sort(),
+        "technology"
+    );
 
 
-    /* =====================================================
-       TECHNOLOGIES
-    ===================================================== */
+    /*
+        Render Status options.
+    */
 
-    if (!technologyMenu) {
-
-        return;
-
-    }
-
-
-    technologyMenu.innerHTML = "";
-
-
-    [...technologies]
-        .sort()
-        .forEach(
-            technology => {
-
-                const label =
-                    document.createElement(
-                        "label"
-                    );
-
-                label.className =
-                    "multi-select-option";
-
-
-                label.innerHTML = `
-
-                    <input
-                        type="checkbox"
-                        value="${escapeAttribute(
-                            technology
-                        )}"
-                    >
-
-                    <span>
-                        ${escapeHTML(
-                            technology
-                        )}
-                    </span>
-
-                `;
-
-
-                technologyMenu.appendChild(
-                    label
-                );
-
-            }
-        );
-
-
-    /* =====================================================
-       CHECKBOX LISTENERS
-    ===================================================== */
-
-    const checkboxes =
-        technologyMenu.querySelectorAll(
-            'input[type="checkbox"]'
-        );
-
-
-    checkboxes.forEach(
-        checkbox => {
-
-            checkbox.addEventListener(
-                "change",
-                () => {
-
-                    updateSelectedTechnologies();
-                    filterPoCs();
-
-                }
-            );
-
-        }
+    renderFilterOptions(
+        filterConfigs.status,
+        [...statuses].sort(),
+        "status"
     );
 
 }
 
 
 /* =========================================================
-   UPDATE TECHNOLOGY SELECTION
+   RENDER FILTER OPTIONS
 ========================================================= */
 
-function updateSelectedTechnologies() {
+function renderFilterOptions(
+    config,
+    options,
+    type
+) {
 
-    if (!technologyMenu) {
+    if (
+        !config ||
+        !config.menu
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+        Clear existing options.
+    */
+
+    config.menu.innerHTML =
+        "";
+
+
+    /* =====================================================
+       SELECT ALL / CLEAR ALL
+    ===================================================== */
+
+    const actions =
+        document.createElement(
+            "div"
+        );
+
+
+    actions.className =
+        "filter-menu-actions";
+
+
+    const toggleAllButton =
+        document.createElement(
+            "button"
+        );
+
+
+    toggleAllButton.type =
+        "button";
+
+
+    toggleAllButton.className =
+        "toggle-all-button";
+
+
+    toggleAllButton.textContent =
+        "Select All";
+
+
+    actions.appendChild(
+        toggleAllButton
+    );
+
+
+    config.menu.appendChild(
+        actions
+    );
+
+
+    /* =====================================================
+       FILTER OPTIONS
+    ===================================================== */
+
+    options.forEach(
+        option => {
+
+            const label =
+                document.createElement(
+                    "label"
+                );
+
+
+            label.className =
+                "multi-select-option";
+
+
+            label.innerHTML = `
+
+                <input
+                    type="checkbox"
+                    value="${escapeAttribute(option)}"
+                >
+
+                <span>
+                    ${escapeHTML(option)}
+                </span>
+
+            `;
+
+
+            const checkbox =
+                label.querySelector(
+                    "input"
+                );
+
+
+            checkbox.addEventListener(
+                "change",
+                () => {
+
+                    updateFilterSelection(
+                        type
+                    );
+
+
+                    updateToggleAllButton(
+                        config
+                    );
+
+
+                    filterPoCs();
+
+                }
+            );
+
+
+            config.menu.appendChild(
+                label
+            );
+
+        }
+    );
+
+
+    /* =====================================================
+       SELECT ALL / CLEAR ALL EVENT
+    ===================================================== */
+
+    toggleAllButton.addEventListener(
+        "click",
+        event => {
+
+            /*
+                Prevent dropdown from closing.
+            */
+
+            event.stopPropagation();
+
+
+            const checkboxes =
+                config.menu.querySelectorAll(
+                    '.multi-select-option input[type="checkbox"]'
+                );
+
+
+            if (
+                checkboxes.length === 0
+            ) {
+
+                return;
+
+            }
+
+
+            const allSelected =
+                [...checkboxes].every(
+                    checkbox =>
+                        checkbox.checked
+                );
+
+
+            checkboxes.forEach(
+                checkbox => {
+
+                    checkbox.checked =
+                        !allSelected;
+
+                }
+            );
+
+
+            updateFilterSelection(
+                type
+            );
+
+
+            updateToggleAllButton(
+                config
+            );
+
+
+            filterPoCs();
+
+        }
+    );
+
+
+    /*
+        Make sure initial button state
+        is correct.
+    */
+
+    updateToggleAllButton(
+        config
+    );
+
+}
+
+
+/* =========================================================
+   UPDATE FILTER SELECTION
+========================================================= */
+
+function updateFilterSelection(
+    type
+) {
+
+    const config =
+        filterConfigs[type];
+
+
+    if (
+        !config ||
+        !config.menu
+    ) {
+
+        return;
+
+    }
+
+
+    const selected =
+        Array.from(
+            config.menu.querySelectorAll(
+                '.multi-select-option input[type="checkbox"]:checked'
+            )
+        )
+        .map(
+            checkbox =>
+                checkbox.value
+        );
+
+
+    /* -----------------------------------------------------
+       SAVE SELECTION
+    ----------------------------------------------------- */
+
+    if (
+        type === "agency"
+    ) {
+
+        selectedAgencies =
+            selected;
+
+    }
+
+
+    if (
+        type === "technology"
+    ) {
+
+        selectedTechnologies =
+            selected;
+
+    }
+
+
+    if (
+        type === "status"
+    ) {
+
+        selectedStatuses =
+            selected;
+
+    }
+
+
+    /* -----------------------------------------------------
+       UPDATE TRIGGER TEXT
+    ----------------------------------------------------- */
+
+    if (
+        !config.selectedText
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        selected.length === 0
+    ) {
+
+        config.selectedText.textContent =
+            config.allText;
+
+        return;
+
+    }
+
+
+    if (
+        selected.length === 1
+    ) {
+
+        config.selectedText.textContent =
+            selected[0];
+
+        return;
+
+    }
+
+
+    config.selectedText.textContent =
+        `${selected.length} ${config.selectedLabel} selected`;
+
+}
+
+
+/* =========================================================
+   UPDATE SELECT ALL BUTTON
+========================================================= */
+
+function updateToggleAllButton(
+    config
+) {
+
+    if (
+        !config ||
+        !config.menu
+    ) {
 
         return;
 
@@ -1184,64 +1639,49 @@ function updateSelectedTechnologies() {
 
 
     const checkboxes =
-        technologyMenu.querySelectorAll(
-            'input[type="checkbox"]:checked'
+        config.menu.querySelectorAll(
+            '.multi-select-option input[type="checkbox"]'
         );
 
 
-    selectedTechnologies =
-        Array.from(checkboxes)
-            .map(
-                checkbox =>
-                    checkbox.value
-            );
+    const button =
+        config.menu.querySelector(
+            ".toggle-all-button"
+        );
 
-
-    if (!technologySelectedText) {
-
-        return;
-
-    }
-
-
-    /*
-        Nothing selected.
-    */
 
     if (
-        selectedTechnologies.length === 0
+        !button
     ) {
-
-        technologySelectedText.textContent =
-            "All Technologies";
 
         return;
 
     }
 
-
-    /*
-        One selected.
-    */
 
     if (
-        selectedTechnologies.length === 1
+        checkboxes.length === 0
     ) {
 
-        technologySelectedText.textContent =
-            selectedTechnologies[0];
+        button.textContent =
+            "Select All";
 
         return;
 
     }
 
 
-    /*
-        Multiple selected.
-    */
+    const allSelected =
+        [...checkboxes].every(
+            checkbox =>
+                checkbox.checked
+        );
 
-    technologySelectedText.textContent =
-        `${selectedTechnologies.length} technologies selected`;
+
+    button.textContent =
+        allSelected
+            ? "Clear All"
+            : "Select All";
 
 }
 
@@ -1260,79 +1700,89 @@ function filterPoCs() {
             : "";
 
 
-    const agency =
-        agencyFilter
-            ? agencyFilter.value
-            : "all";
-
-
-    const status =
-        statusFilter
-            ? statusFilter.value
-            : "all";
-
-
-    const technologies =
-        selectedTechnologies;
-
-
     const filteredPoCs =
         pocData.filter(
             poc => {
+
+                /* -------------------------------------------------
+                   BASIC DATA
+                ------------------------------------------------- */
 
                 const title =
                     String(
                         poc.title || ""
                     )
-                        .toLowerCase();
+                    .toLowerCase();
 
 
                 const description =
                     String(
                         poc.description || ""
                     )
-                        .toLowerCase();
+                    .toLowerCase();
 
 
                 const pocAgency =
                     String(
                         poc.agency || ""
-                    )
-                        .toLowerCase();
+                    );
 
 
-                /* =========================================
+                const pocStatus =
+                    displayStatus(
+                        poc.status
+                    );
+
+
+                /* -------------------------------------------------
                    SEARCH
-                ========================================= */
+                ------------------------------------------------- */
 
                 const matchesSearch =
                     !search ||
-                    title.includes(search) ||
-                    description.includes(search) ||
-                    pocAgency.includes(search);
+
+                    title.includes(
+                        search
+                    ) ||
+
+                    description.includes(
+                        search
+                    ) ||
+
+                    pocAgency
+                        .toLowerCase()
+                        .includes(
+                            search
+                        );
 
 
-                /* =========================================
+                /* -------------------------------------------------
                    AGENCY
-                ========================================= */
+                   ANY selected agency.
+                ------------------------------------------------- */
 
                 const matchesAgency =
-                    agency === "all" ||
-                    poc.agency === agency;
+                    selectedAgencies.length === 0 ||
+
+                    selectedAgencies.includes(
+                        pocAgency
+                    );
 
 
-                /* =========================================
+                /* -------------------------------------------------
                    TECHNOLOGY
-                   Matches ANY selected technology.
-                ========================================= */
+                   ANY selected technology.
+                ------------------------------------------------- */
 
                 const matchesTechnology =
-                    technologies.length === 0 ||
+                    selectedTechnologies.length === 0 ||
+
                     (
                         Array.isArray(
                             poc.technologies
                         ) &&
-                        technologies.some(
+
+                        selectedTechnologies.some(
                             technology =>
                                 poc.technologies.includes(
                                     technology
@@ -1341,24 +1791,37 @@ function filterPoCs() {
                     );
 
 
-                /* =========================================
+                /* -------------------------------------------------
                    STATUS
-                ========================================= */
+                   ANY selected status.
+                ------------------------------------------------- */
 
                 const matchesStatus =
-                    status === "all" ||
-                    statusClassFor(
-                        poc.status
-                    ) === statusClassFor(
-                        status
+                    selectedStatuses.length === 0 ||
+
+                    selectedStatuses.some(
+                        selectedStatus =>
+
+                            statusClassFor(
+                                selectedStatus
+                            ) ===
+
+                            statusClassFor(
+                                pocStatus
+                            )
                     );
 
 
                 return (
+
                     matchesSearch &&
+
                     matchesAgency &&
+
                     matchesTechnology &&
+
                     matchesStatus
+
                 );
 
             }
@@ -1373,33 +1836,15 @@ function filterPoCs() {
 
 
 /* =========================================================
-   FILTER EVENTS
+   SEARCH EVENT
 ========================================================= */
 
-if (searchInput) {
+if (
+    searchInput
+) {
 
     searchInput.addEventListener(
         "input",
-        filterPoCs
-    );
-
-}
-
-
-if (agencyFilter) {
-
-    agencyFilter.addEventListener(
-        "change",
-        filterPoCs
-    );
-
-}
-
-
-if (statusFilter) {
-
-    statusFilter.addEventListener(
-        "change",
         filterPoCs
     );
 
@@ -1410,92 +1855,120 @@ if (statusFilter) {
    REFRESH / RESET FILTERS
 ========================================================= */
 
-if (refreshButton) {
+if (
+    refreshButton
+) {
 
     refreshButton.addEventListener(
         "click",
         () => {
 
-            /*
-                Clear search.
-            */
+            /* -------------------------------------------------
+               CLEAR SEARCH
+            ------------------------------------------------- */
 
-            if (searchInput) {
+            if (
+                searchInput
+            ) {
 
-                searchInput.value = "";
-
-            }
-
-
-            /*
-                Reset agency.
-            */
-
-            if (agencyFilter) {
-
-                agencyFilter.value =
-                    "all";
+                searchInput.value =
+                    "";
 
             }
 
 
-            /*
-                Reset technologies.
-            */
+            /* -------------------------------------------------
+               RESET ALL SELECTION ARRAYS
+            ------------------------------------------------- */
+
+            selectedAgencies = [];
 
             selectedTechnologies = [];
 
+            selectedStatuses = [];
 
-            if (technologyMenu) {
 
-                const checkboxes =
-                    technologyMenu.querySelectorAll(
-                        'input[type="checkbox"]'
+            /* -------------------------------------------------
+               RESET ALL CHECKBOXES
+            ------------------------------------------------- */
+
+            Object.values(
+                filterConfigs
+            ).forEach(
+                config => {
+
+                    if (
+                        !config.menu
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const checkboxes =
+                        config.menu.querySelectorAll(
+                            '.multi-select-option input[type="checkbox"]'
+                        );
+
+
+                    checkboxes.forEach(
+                        checkbox => {
+
+                            checkbox.checked =
+                                false;
+
+                        }
                     );
 
 
-                checkboxes.forEach(
-                    checkbox => {
+                    /*
+                        Reset trigger text.
+                    */
 
-                        checkbox.checked =
-                            false;
+                    if (
+                        config.selectedText
+                    ) {
+
+                        config.selectedText.textContent =
+                            config.allText;
 
                     }
-                );
-
-            }
 
 
-            if (
-                technologySelectedText
-            ) {
+                    /*
+                        Reset Select All button.
+                    */
 
-                technologySelectedText.textContent =
-                    "All Technologies";
+                    updateToggleAllButton(
+                        config
+                    );
 
-            }
+
+                    /*
+                        Close dropdown.
+                    */
+
+                    config.menu.hidden =
+                        true;
+
+
+                    if (
+                        config.container
+                    ) {
+
+                        config.container.classList.remove(
+                            "open"
+                        );
+
+                    }
+
+                }
+            );
 
 
             /*
-                Reset status.
-            */
-
-            if (statusFilter) {
-
-                statusFilter.value =
-                    "all";
-
-            }
-
-
-            /*
-                Re-render all PoCs.
-
-                PoC ID 7 will STILL use its
-                fixed 2-person team.
-
-                Other PoCs without a fixed/API
-                team may receive new random teams.
+                Render all PoCs.
             */
 
             renderPoCs(
@@ -1518,7 +1991,18 @@ async function initializeApp() {
 
         await loadPoCData();
 
+
+        /*
+            Build all filter options
+            from API data.
+        */
+
         populateFilters();
+
+
+        /*
+            Display all PoCs.
+        */
 
         renderPoCs(
             pocData
@@ -1534,14 +2018,19 @@ async function initializeApp() {
         openSharedPoC();
 
 
-    } catch (error) {
+    } catch (
+        error
+    ) {
 
         console.error(
             "Failed to initialize application:",
             error
         );
 
-        renderPoCs([]);
+
+        renderPoCs(
+            []
+        );
 
     }
 
