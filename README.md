@@ -465,46 +465,80 @@ The frontend does not require a frontend framework or package manager.
 
 ```text
 DDL-POC-WEB/
-
-├── README.md
 ├── Dockerfile
-├── docker-compose.yml
-├── nginx.conf
-│
-├── assets/
+├── README.md
+├── RTA Design Standards
+│   ├── Brand Assets
+│   │   └── RTA_Dubai_logo.png
+│   ├── RTA PoC Design System.dc.html
+│   ├── assets
+│   │   ├── rta-logo-color.png
+│   │   └── rta-logo-white.png
+│   ├── rta-ppt-v2.skill
+│   └── support.js
+├── assets
+│   ├── demo-readme
+│   │   ├── main-l.png
+│   │   ├── main.png
+│   │   ├── poc-l.png
+│   │   └── poc.png
 │   ├── favicon.png
-│   ├── font/
+│   ├── font
 │   │   ├── Dubai-Bold.ttf
 │   │   ├── Dubai-Light.ttf
 │   │   ├── Dubai-Medium.ttf
 │   │   └── Dubai-Regular.ttf
-│   ├── images/
-│   ├── video/
-│   │   └── poc1.mp4
-│   └── logo.png
-│
-├── backend/
+│   ├── images
+│   │   ├── bgi.jpeg
+│   │   ├── p1-poc1.jpeg
+│   │   ├── p2-poc1.jpeg
+│   │   ├── person1.jpg
+│   │   ├── person2.jpg
+│   │   ├── person3.jpg
+│   │   ├── person4.avif
+│   │   └── person5.avif
+│   ├── logo-black.png
+│   ├── logo.png
+│   ├── rta-logo-color.png
+│   ├── rta-logo-white.png
+│   └── video
+│       └── poc1.mp4
+├── backend
 │   ├── Dockerfile
-│   ├── requirements.txt
-│   └── app/
-│       ├── __init__.py
-│       ├── main.py
-│       └── deliverables/
-│           ├── __init__.py
-│           └── router.py
-│
-├── css/
+│   ├── app
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-311.pyc
+│   │   │   ├── __init__.cpython-312.pyc
+│   │   │   ├── main.cpython-311.pyc
+│   │   │   └── main.cpython-312.pyc
+│   │   ├── cache
+│   │   │   ├── __init__.py
+│   │   │   ├── redis.py
+│   │   │   └── router.py
+│   │   ├── chatbot
+│   │   │   ├── __init__.py
+│   │   │   ├── router.py
+│   │   │   └── vector_store.py
+│   │   ├── deliverables
+│   │   │   ├── __init__.py
+│   │   │   ├── __pycache__
+│   │   │   │   ├── __init__.cpython-311.pyc
+│   │   │   │   ├── __init__.cpython-312.pyc
+│   │   │   │   ├── router.cpython-311.pyc
+│   │   │   │   └── router.cpython-312.pyc
+│   │   │   └── router.py
+│   │   └── main.py
+│   └── requirements.txt
+├── css
 │   ├── poc.css
 │   └── style.css
-│
-├── data/
-│   └── pocs.json
-│
-├── js/
+├── docker-compose.yml
+├── index.html
+├── js
 │   ├── app.js
 │   └── poc.js
-│
-├── index.html
+├── nginx.conf
 └── poc.html
 ```
 
