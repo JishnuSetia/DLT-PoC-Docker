@@ -1,34 +1,42 @@
-# POC Gallery
+# Digital Lab PoC Gallery
 
-A modern, responsive Proof of Concept (PoC) Gallery designed to provide a centralized interface for discovering, filtering, viewing, and interacting with technology-focused PoCs.
+A modern, responsive web application for discovering, filtering, and viewing Proofs of Concept (PoCs) developed across Digital Lab and associated agencies.
 
-The application provides a clean, government-oriented interface for showcasing PoCs developed across different agencies, teams, and technology areas.
+The application provides a centralized interface for browsing technology-focused PoCs, viewing detailed information, accessing demonstration videos, sharing individual PoCs, and retrieving deliverable information through the Digital Lab LabPortal API.
 
-> **Current Version:** The application currently provides PoC and deliverable functionality through a Dockerized Nginx + FastAPI architecture with Redis caching. AI/chat functionality is reserved for a future version.
+> **Current Version:** Production-ready internal release using a Dockerized Nginx + FastAPI architecture with Redis caching.
+
+---
+
+<div style="display: flex;justify-content:space-between;align-items:center">
+<img src="assets/demo-readme/main.png">
+<img src="assets/demo-readme/poc.png">
+</div>
 
 ---
 
 # Overview
 
-POC Gallery is a web-based platform that allows users to:
+The Digital Lab PoC Gallery provides a centralized platform for showcasing and accessing Proofs of Concept.
 
-* Browse available Proofs of Concept
+Users can:
+
+* Browse available PoCs
 * Search PoCs by title, description, or agency
 * Filter PoCs by agency
 * Filter PoCs by technology
 * Filter PoCs by status
-* View detailed information about individual PoCs
-* View PoC benefits and technology stacks
-* View team members associated with each PoC
-* View PoC demonstration videos
+* View detailed PoC information
+* View benefits and technology stacks
+* View associated team members
+* Watch PoC demonstration videos
 * Share individual PoCs through unique URLs
 * Open a PoC directly using a shared URL
 * Navigate to external PoC resources
-* Retrieve PoC and deliverable information through the backend API
+* Retrieve deliverable information through the backend API
 * Cache frequently requested API data using Redis
-* Run the application using Docker containers
 
-The frontend is lightweight and dependency-free, while the backend provides API functionality, external LabPortal communication, caching, and media proxying.
+The application uses a lightweight dependency-free frontend and a Python/FastAPI backend responsible for API communication, caching, error handling, and media proxying.
 
 ---
 
@@ -36,95 +44,93 @@ The frontend is lightweight and dependency-free, while the backend provides API 
 
 ## PoC Gallery
 
-PoCs are displayed as responsive cards containing:
+PoCs are presented as responsive cards containing:
 
 * Agency
 * PoC title
 * Description
-* Current status
+* Status
 * Technology stack
 * Team size
 * View Details action
 
-Cards automatically adapt to the available screen size.
+The gallery automatically adapts to different screen sizes.
 
 ### Status Indicators
 
-Each PoC has a status indicator.
+Each PoC includes a status indicator represented through a badge and visual status bar.
 
-Supported frontend statuses include:
+Supported statuses include:
 
-* **Planning**
-* **In Progress**
-* **Complete**
-* **Completed**
-* **Blocked**
-
-The status is represented visually through both a badge and a status bar.
+* Planning
+* In Progress
+* Complete
+* Completed
+* Blocked
 
 ---
 
 # Search
 
-Users can search across:
+The gallery provides dynamic search functionality across:
 
 * PoC title
 * PoC description
 * Agency
 
-Search results update dynamically as the user types.
+Search results update as the user enters text.
 
 ---
 
 # Filtering
 
-The gallery supports multiple filtering options.
+The gallery provides multiple filtering mechanisms.
 
-## Agency
+## Agency Filter
 
-Filter PoCs by the organization or agency responsible for the PoC.
+Users can filter PoCs by the organization or agency responsible for the PoC.
 
-## Technology
+## Technology Filter
 
-A multi-select technology filter allows users to select multiple technologies simultaneously.
+Technology filtering supports multiple simultaneous selections.
 
 For example:
 
 ```text
 Python
-React
 FastAPI
+React
 AI
 Machine Learning
 GIS
 ```
 
-A PoC matches the technology filter if it contains at least one of the selected technologies.
+A PoC is returned when it contains at least one of the selected technologies.
 
-## Status
+## Status Filter
 
-PoCs can also be filtered by their current status.
+Users can filter PoCs based on their current status.
 
 ---
 
 # PoC Details
 
-Selecting **View Details** opens the PoC details interface.
+Selecting **View Details** opens the detailed PoC interface.
 
-The details page can contain:
+The details view can contain:
 
 * Status
 * Agency / Department
 * Title
 * Description
 * External PoC link
-* Share button
-* Demo video
+* Share action
+* Demonstration video
 * Benefits
 * Technology stack
 * Team members
 
-The interface is responsive and adapts to desktop, tablet, and mobile layouts.
+The interface is responsive across desktop, tablet, and mobile devices.
 
 ---
 
@@ -132,40 +138,44 @@ The interface is responsive and adapts to desktop, tablet, and mobile layouts.
 
 PoC demonstration videos can be provided through the backend API.
 
-For the current development version, PoC 1 / Deliverable 7 uses a locally hosted demonstration video:
+The application supports both locally hosted development videos and videos retrieved through the backend media proxy.
+
+Example local development video:
 
 ```text
 assets/video/poc1.mp4
 ```
 
-Other deliverables can use the backend video proxy endpoint:
+Backend video endpoint:
 
 ```text
 /api/deliverables/{id}/demo-video
 ```
 
-If a demonstration video cannot be loaded, the frontend automatically displays a video placeholder.
+If a demonstration video cannot be loaded, the frontend displays an appropriate video placeholder.
 
 ---
 
 # Sharing PoCs
 
-Individual PoCs can be opened through a URL containing their identifier.
+Each PoC can be accessed directly using its unique identifier.
 
-For example:
+Example:
 
 ```text
 poc.html?id=7
 ```
 
-When a user opens a URL containing a PoC ID, the application:
+When a shared URL is opened, the application:
 
 1. Reads the PoC ID from the URL
-2. Requests the corresponding deliverable from the backend
+2. Requests the corresponding deliverable
 3. Loads the PoC information
 4. Displays the requested PoC
 
-The **Share** action copies the current PoC URL to the user's clipboard.
+The **Share** action copies the current PoC URL to the clipboard.
+
+This allows individual PoCs to be shared directly without requiring users to manually search for them.
 
 ---
 
@@ -173,15 +183,13 @@ The **Share** action copies the current PoC URL to the user's clipboard.
 
 The application includes a Python/FastAPI backend.
 
-The backend currently provides deliverable-related API endpoints used by the frontend.
-
 The backend is responsible for:
 
 * Retrieving deliverable information
-* Retrieving deliverable details
-* Communicating with external LabPortal services
-* Proxying demonstration videos where applicable
-* Caching frequently requested deliverable data
+* Retrieving individual deliverable details
+* Communicating with the Digital Lab LabPortal API
+* Proxying demonstration videos
+* Caching frequently requested API responses
 * Returning structured API responses to the frontend
 * Handling external API failures and errors
 
@@ -195,126 +203,85 @@ backend/
 
 # Redis Caching
 
-Redis is used as the application's centralized caching layer.
+Redis is used as the centralized application caching layer.
 
-The purpose of Redis is to reduce unnecessary requests to the external LabPortal API and improve response times for frequently accessed data.
+The cache reduces unnecessary requests to the external LabPortal API and improves response times for frequently accessed resources.
 
-Instead of every frontend request requiring a new request to LabPortal, the backend can:
+The request flow is:
 
 ```text
-Frontend Request
-       │
-       ▼
-    FastAPI
-       │
-       ▼
-   Check Redis
-    /       \
-  HIT       MISS
-   │          │
-   ▼          ▼
-Return     LabPortal
-Cached       API
-Data          │
-              ▼
-           Redis
-              │
-              ▼
-        Return Data
+Frontend
+    │
+    ▼
+ FastAPI
+    │
+    ▼
+ Redis
+    │
+ ├── HIT ──────────► Return Cached Data
+ │
+ └── MISS
+        │
+        ▼
+   LabPortal API
+        │
+        ▼
+      Redis
+        │
+        ▼
+     Response
 ```
 
 ## Why Redis?
 
-The initial implementation used process-local in-memory caching. While this works for development and a single backend process, it does not scale well when multiple backend instances are running.
+A process-local memory cache becomes problematic when multiple backend instances are running because each instance maintains its own cache.
 
 For example:
 
 ```text
-Backend Instance 1
-      └── Local Memory Cache
-
-Backend Instance 2
-      └── Local Memory Cache
-
-Backend Instance 3
-      └── Local Memory Cache
+FastAPI #1 ── Local Cache
+FastAPI #2 ── Local Cache
+FastAPI #3 ── Local Cache
 ```
 
-Each instance would maintain a different cache.
-
-Redis provides a shared cache:
+Redis provides a shared caching layer:
 
 ```text
-              ┌──────────────┐
-              │    Redis     │
-              │ Shared Cache │
-              └──────┬───────┘
-                     │
-        ┌────────────┼────────────┐
-        │            │            │
-        ▼            ▼            ▼
-   FastAPI #1   FastAPI #2   FastAPI #3
+                 Redis
+              Shared Cache
+                   │
+       ┌───────────┼───────────┐
+       │           │           │
+       ▼           ▼           ▼
+  FastAPI #1  FastAPI #2  FastAPI #3
 ```
 
-This allows multiple backend instances to share cached data.
-
----
+This allows multiple backend instances to share cached API responses.
 
 ## Cache Strategy
 
-The application uses a time-to-live (TTL) based caching strategy.
+The application uses a TTL-based caching strategy.
 
-The current cache target is approximately:
+The current cache duration is approximately:
 
 ```text
 5 minutes
 ```
 
-Frequently requested deliverables can therefore be served from Redis without contacting LabPortal on every request.
-
-Conceptually:
-
-```text
-GET /api/deliverables
-        │
-        ▼
- Redis Cache
-        │
-   ┌────┴────┐
-   │         │
-  HIT       MISS
-   │         │
-   ▼         ▼
-Return    LabPortal
-Cached       API
-Data         │
-             ▼
-           Redis
-             │
-             ▼
-          Response
-```
-
-The cache should eventually support separate keys for:
-
-* Deliverable lists
-* Individual deliverables
-* Other frequently accessed API resources
-
-Example key patterns:
+Example cache keys include:
 
 ```text
 deliverables:all
 deliverable:{id}
 ```
 
-The exact key structure may evolve as the caching layer expands.
+The exact key structure can be extended as additional API resources are introduced.
 
 ---
 
-# Current Architecture
+# Architecture
 
-The application consists of three primary Dockerized services:
+The application consists of three Dockerized services:
 
 ```text
                          ┌─────────────────────┐
@@ -340,16 +307,18 @@ The application consists of three primary Dockerized services:
                          ▼                     ▼
                   ┌──────────────┐      ┌──────────────┐
                   │    Redis     │      │  LabPortal   │
-                  │    Cache     │      │     APIs     │
-                  │  Internal    │      │   External   │
+                  │    Cache     │      │     API      │
                   └──────────────┘      └──────────────┘
 ```
 
-The frontend communicates with the backend through Nginx.
+The frontend communicates with FastAPI through Nginx.
 
-The backend communicates with Redis and the external LabPortal API.
+FastAPI communicates with:
 
-Redis is not directly exposed to the public network.
+* Redis for caching
+* LabPortal for external deliverable data
+
+Redis remains internal to the Docker network.
 
 ---
 
@@ -357,28 +326,25 @@ Redis is not directly exposed to the public network.
 
 The project is containerized using Docker Compose.
 
-There are currently three containers:
-
 ## Frontend Container
 
 The frontend container runs Nginx.
 
 Responsibilities:
 
-* Serve HTML files
+* Serve HTML
 * Serve CSS
 * Serve JavaScript
-* Serve images and videos
+* Serve images
+* Serve videos
 * Serve JSON assets
-* Proxy `/api/` requests to the backend
+* Proxy `/api/` requests to FastAPI
 
-The frontend is exposed on:
+The application is exposed through:
 
 ```text
 http://localhost
 ```
-
----
 
 ## Backend Container
 
@@ -387,71 +353,65 @@ The backend container runs FastAPI using Uvicorn.
 Responsibilities:
 
 * Provide REST API endpoints
-* Handle deliverable requests
 * Communicate with LabPortal
 * Communicate with Redis
 * Cache API responses
-* Proxy demonstration videos where applicable
+* Proxy demonstration videos
+* Handle API errors
 
-The backend listens internally on:
+FastAPI listens internally on:
 
 ```text
 0.0.0.0:8000
 ```
 
-The backend is intentionally not exposed directly to the host in the current Docker configuration.
-
-Nginx communicates with it through the Docker Compose network.
-
----
+The backend is not directly exposed to the host in the Docker configuration.
 
 ## Redis Container
 
-The Redis container provides the centralized application cache.
+The Redis container provides centralized application caching.
 
 Responsibilities:
 
 * Store cached API responses
 * Share cache data between backend instances
-* Reduce external LabPortal API requests
-* Improve response latency for frequently accessed resources
-* Provide a foundation for future distributed caching
+* Reduce external API requests
+* Improve response latency
+* Provide a foundation for horizontal backend scaling
 
-Redis listens internally on its standard port:
+Redis listens internally on:
 
 ```text
 6379
 ```
 
-Redis should remain internal to the Docker/network environment and should not be publicly exposed.
+Redis should remain internal to the application network.
 
 ---
 
 # Nginx API Proxy
 
-The frontend uses relative API URLs.
+The frontend uses relative API URLs rather than hardcoding backend hostnames or ports.
 
-For example:
+Example:
 
 ```javascript
 const API_BASE_URL = "";
 ```
 
-A request such as:
+A frontend request such as:
 
 ```text
 /api/deliverables/7
 ```
 
-is handled by Nginx and proxied to:
+is proxied by Nginx to:
 
 ```text
 http://backend:8000/api/deliverables/7
 ```
 
-This avoids hardcoding a backend hostname or port into the frontend.
-
-It also allows the frontend and backend to be deployed together behind a single public endpoint.
+This allows the frontend and backend to operate behind a single public endpoint while keeping the backend service internal.
 
 ---
 
@@ -459,18 +419,16 @@ It also allows the frontend and backend to be deployed together behind a single 
 
 ## Frontend
 
-| Technology | Purpose                                             |
-| ---------- | --------------------------------------------------- |
-| HTML5      | Page structure                                      |
-| CSS3       | Styling and responsive layout                       |
-| JavaScript | Application logic                                   |
-| JSON       | Local/static data                                   |
-| Dubai Font | UI typography                                       |
-| Nginx      | Production static file server and API reverse proxy |
+| Technology | Purpose                              |
+| ---------- | ------------------------------------ |
+| HTML5      | Page structure                       |
+| CSS3       | Styling and responsive layout        |
+| JavaScript | Application logic                    |
+| JSON       | Local/static data                    |
+| Dubai Font | UI typography                        |
+| Nginx      | Static file server and reverse proxy |
 
-The frontend does not use a frontend framework or package manager.
-
----
+The frontend does not require a frontend framework or package manager.
 
 ## Backend
 
@@ -483,24 +441,14 @@ The frontend does not use a frontend framework or package manager.
 | python-dotenv | Environment configuration |
 | Uvicorn       | ASGI server               |
 
----
-
-## Caching
-
-| Technology | Purpose                         |
-| ---------- | ------------------------------- |
-| Redis      | Distributed application caching |
-
----
-
 ## Infrastructure
 
 | Technology     | Purpose                           |
 | -------------- | --------------------------------- |
 | Docker         | Containerization                  |
-| Docker Compose | Multi-container orchestration     |
+| Docker Compose | Service orchestration             |
 | Nginx          | Frontend server and reverse proxy |
-| Redis          | Shared cache layer                |
+| Redis          | Shared application cache          |
 
 ---
 
@@ -555,7 +503,7 @@ DDL-POC-WEB/
 
 # Data Structure
 
-The current gallery dataset is stored in:
+Local development data is stored in:
 
 ```text
 data/pocs.json
@@ -589,7 +537,7 @@ A PoC follows the general structure:
 }
 ```
 
-The exact fields returned by the backend may differ from the local development dataset as the application transitions toward API-based data.
+Production deliverable information can be retrieved from the backend API.
 
 ---
 
@@ -597,18 +545,22 @@ The exact fields returned by the backend may differ from the local development d
 
 ## Docker — Recommended
 
-Docker is the recommended way to run the current version.
-
 From the project root:
 
 ```bash
 docker compose build
 ```
 
-Then start the application:
+Start the application:
 
 ```bash
 docker compose up
+```
+
+Or run in detached mode:
+
+```bash
+docker compose up -d
 ```
 
 The frontend will be available at:
@@ -617,21 +569,13 @@ The frontend will be available at:
 http://localhost
 ```
 
-The backend and Redis services communicate through the internal Docker Compose network.
-
-To run the containers in the background:
-
-```bash
-docker compose up -d
-```
-
-To stop the application:
+Stop the application:
 
 ```bash
 docker compose down
 ```
 
-To rebuild after making code changes:
+To rebuild after making changes:
 
 ```bash
 docker compose down
@@ -645,45 +589,26 @@ docker compose up
 
 The backend uses environment variables for configuration.
 
-For example:
-
-```text
-LABPORTAL_API_KEY
-```
-
-The project can provide these values through a `.env` file.
-
 Example:
 
 ```text
 LABPORTAL_API_KEY=your_api_key_here
-```
-
-Redis configuration can also be provided through environment variables.
-
-For example:
-
-```text
 REDIS_URL=redis://redis:6379
 ```
 
-> **Important:** `.env` files containing credentials must not be committed to Git.
+Credentials must not be committed to the repository.
 
-A production deployment should use the deployment platform's secret/environment-variable management instead of storing credentials in the repository.
+For production deployments, secrets should be managed using the deployment environment's secret management system.
 
 ---
 
 # Running Without Docker
 
-Docker is recommended for deployment, but the frontend and backend can also be run directly during development.
+Docker is recommended for the complete application, but the frontend and backend can also be run independently during development.
 
-## Frontend Only
+## Frontend
 
-Because the frontend may load JSON using `fetch()`, it should be served through a local HTTP server rather than opened directly using:
-
-```text
-file://
-```
+Because the frontend uses `fetch()` to load resources, it should be served through a local HTTP server rather than opened using `file://`.
 
 From the project root:
 
@@ -697,11 +622,9 @@ Then open:
 http://localhost:8000
 ```
 
----
-
 ## Backend
 
-Navigate to the backend directory:
+Navigate to the backend:
 
 ```bash
 cd backend
@@ -712,8 +635,6 @@ Create a virtual environment:
 ```bash
 python3 -m venv venv
 ```
-
-Activate it.
 
 ### macOS / Linux
 
@@ -745,7 +666,7 @@ The backend will normally be available at:
 http://127.0.0.1:8000
 ```
 
-FastAPI's interactive API documentation is available at:
+Interactive API documentation:
 
 ```text
 http://127.0.0.1:8000/docs
@@ -755,13 +676,13 @@ http://127.0.0.1:8000/docs
 
 # API Endpoints
 
-The current backend exposes deliverable-related routes under:
+The backend exposes deliverable-related endpoints under:
 
 ```text
 /api/deliverables/
 ```
 
-Examples include:
+Examples:
 
 ```text
 GET /api/deliverables
@@ -775,52 +696,38 @@ GET /api/deliverables/{id}
 GET /api/deliverables/{id}/demo-video
 ```
 
-The backend communicates with the external LabPortal API when required.
-
-The exact API behavior is implemented in:
+The implementation is located in:
 
 ```text
 backend/app/deliverables/router.py
 ```
 
-FastAPI automatically provides interactive API documentation at:
+FastAPI automatically provides interactive documentation through:
 
 ```text
 /docs
 ```
 
-when the backend is running.
-
 ---
 
 # External LabPortal Integration
 
-The backend communicates with the Digital Lab LabPortal API.
+The backend communicates with the Digital Lab LabPortal API to retrieve deliverable information.
 
-The external API is used to retrieve:
-
-* Deliverable lists
-* Deliverable details
-* Demonstration videos
-
-The backend acts as an intermediary between the frontend and LabPortal.
-
-This provides several advantages:
+The backend acts as an intermediary between the frontend and LabPortal:
 
 ```text
 Frontend
-   │
-   ▼
-FastAPI
-   │
-   ├── Redis
-   │
-   └── LabPortal API
+    │
+    ▼
+ FastAPI
+    │
+    ├────────► Redis
+    │
+    └────────► LabPortal API
 ```
 
-The frontend does not need direct access to the LabPortal API key.
-
-The LabPortal API key therefore remains server-side.
+This architecture keeps the LabPortal API key server-side rather than exposing it to frontend users.
 
 ---
 
@@ -828,7 +735,7 @@ The LabPortal API key therefore remains server-side.
 
 The interface follows a modern government digital portal aesthetic inspired by RTA-style digital interfaces.
 
-## Design Principles
+Design principles include:
 
 * Clean
 * Professional
@@ -838,9 +745,9 @@ The interface follows a modern government digital portal aesthetic inspired by R
 * Modern
 * Government-oriented
 
-The interface uses the RTA-inspired color system where appropriate.
+The application uses the RTA-inspired visual language selectively throughout the interface.
 
-Primary colors include:
+## Color System
 
 ```text
 RTA Blue       #191C84
@@ -853,15 +760,13 @@ RTA Cyan       #00B4BD
 Black          #000000
 ```
 
-The application uses these colors selectively rather than applying the entire palette to every component.
-
 ---
 
 # Typography
 
 The application uses the locally hosted Dubai font family.
 
-Font files are located at:
+Font files are located under:
 
 ```text
 assets/font/
@@ -870,53 +775,33 @@ assets/font/
 Available weights:
 
 ```text
-Dubai Light      → 300
-Dubai Regular    → 400
-Dubai Medium     → 500
-Dubai Bold       → 700
+Dubai Light     → 300
+Dubai Regular   → 400
+Dubai Medium    → 500
+Dubai Bold      → 700
 ```
 
-The fonts are loaded through CSS using `@font-face`.
-
-This avoids relying on an external font provider and allows the application to use the same typography when deployed in environments with restricted internet access.
+Using local font files avoids dependency on external font providers and provides consistent typography in restricted network environments.
 
 ---
 
 # Responsive Design
 
-The gallery supports multiple screen sizes.
+The gallery supports desktop, tablet, and mobile layouts.
 
-## Desktop
+### Desktop
 
-Three PoC cards per row.
+Three cards per row.
 
-```text
-┌──────────┐ ┌──────────┐ ┌──────────┐
-│   PoC    │ │   PoC    │ │   PoC    │
-└──────────┘ └──────────┘ └──────────┘
-```
-
-## Tablet
+### Tablet
 
 Two cards per row.
 
-```text
-┌──────────┐ ┌──────────┐
-│   PoC    │ │   PoC    │
-└──────────┘ └──────────┘
-```
-
-## Mobile
+### Mobile
 
 One card per row.
 
-```text
-┌──────────┐
-│   PoC    │
-└──────────┘
-```
-
-The PoC details interface also adapts to smaller screens.
+The PoC details interface also adapts to smaller screen sizes.
 
 ---
 
@@ -926,7 +811,7 @@ The application includes several accessibility considerations.
 
 ## Keyboard Navigation
 
-The details interface supports:
+Interactive interfaces support keyboard navigation including:
 
 ```text
 Escape
@@ -938,7 +823,7 @@ Shift + Tab
 
 ## Focus Management
 
-The application manages focus when opening and closing interactive UI elements.
+Focus is managed when opening and closing interactive UI elements.
 
 ## Reduced Motion
 
@@ -948,15 +833,15 @@ The application respects:
 prefers-reduced-motion
 ```
 
-Users who have reduced-motion preferences enabled receive minimal animations and transitions.
+Users who have reduced-motion preferences enabled receive reduced animations and transitions.
 
 ---
 
 # Security Considerations
 
-User-provided or externally loaded data is escaped before being inserted into HTML.
+The application includes several security measures.
 
-The application uses:
+Dynamic data is escaped before being inserted into HTML using:
 
 ```javascript
 escapeHTML()
@@ -968,24 +853,24 @@ and:
 escapeAttribute()
 ```
 
-to reduce the risk of HTML injection when rendering dynamic PoC data.
-
-External links opened in a new tab use:
+External links opened in new tabs use:
 
 ```html
 target="_blank"
 rel="noopener noreferrer"
 ```
 
-Backend credentials are provided through environment variables rather than being embedded directly into frontend code.
+Backend credentials are supplied through environment variables rather than frontend code.
 
-Redis is intended to remain on the internal application network and should not be publicly exposed.
+The LabPortal API key is therefore kept server-side.
+
+Redis remains internal to the Docker network and is not intended to be publicly exposed.
 
 ---
 
 # Browser Support
 
-The application relies on modern browser APIs including:
+The application uses modern browser APIs including:
 
 * Fetch API
 * URLSearchParams
@@ -1002,19 +887,19 @@ Recommended browsers:
 
 ---
 
-# Development Notes
+# Development
 
 ## Adding a New PoC
 
-Add a new object to:
+For locally managed PoC data, add a new object to:
 
 ```text
 data/pocs.json
 ```
 
-The gallery will automatically use the available PoC information when rendering the gallery.
+The gallery automatically uses the available PoC information when rendering the interface.
 
-Depending on the current API integration, production PoC information may instead come from the backend.
+Where applicable, production information is retrieved from the backend API.
 
 ---
 
@@ -1022,35 +907,29 @@ Depending on the current API integration, production PoC information may instead
 
 ## `index.html`
 
-Contains the main PoC Gallery page structure.
-
----
+Defines the main PoC Gallery page structure.
 
 ## `poc.html`
 
-Contains the PoC detail page structure.
-
----
+Defines the PoC detail page structure.
 
 ## `js/app.js`
 
-Contains the primary gallery functionality:
+Contains primary gallery functionality including:
 
 * Loading PoC data
 * Rendering cards
 * Search
 * Filtering
 * Technology multi-select
-* Modal/details management
+* Details management
 * Sharing
 * URL-based navigation
 * Team rendering
 
----
-
 ## `js/poc.js`
 
-Contains the PoC detail functionality:
+Contains PoC detail functionality including:
 
 * Loading individual deliverables
 * Rendering PoC details
@@ -1061,13 +940,9 @@ Contains the PoC detail functionality:
 * Sharing
 * Error handling
 
----
-
 ## `css/style.css`
 
-Contains the primary gallery styling.
-
----
+Contains primary gallery styling.
 
 ## `css/poc.css`
 
@@ -1087,7 +962,11 @@ Builds the FastAPI backend container.
 
 ## `docker-compose.yml`
 
-Defines and orchestrates the frontend, backend, and Redis containers.
+Defines and orchestrates:
+
+* Frontend
+* Backend
+* Redis
 
 ## `nginx.conf`
 
@@ -1099,11 +978,11 @@ Configures Nginx to:
 
 ---
 
-# Production Deployment
+# Production Architecture
 
-The architecture is designed to support scaling beyond the initial internal deployment.
+The current architecture can be extended for larger deployments.
 
-A larger deployment can evolve toward:
+A scalable deployment can introduce a load balancer and multiple FastAPI instances:
 
 ```text
                          Users
@@ -1130,99 +1009,58 @@ A larger deployment can evolve toward:
                      LabPortal API
 ```
 
-Redis provides a shared cache across backend instances, allowing the application to scale horizontally without each backend process maintaining an isolated cache.
+Redis allows multiple backend instances to share cached data.
 
-Recommended production architecture should additionally consider:
+Future infrastructure can introduce:
 
-* HTTPS/TLS
 * Load balancing
+* HTTPS/TLS
 * Secure secret management
-* Production CORS configuration
 * Authentication and authorization
-* API request validation
 * Rate limiting
 * Centralized logging
 * Error monitoring
 * Health checks
 * Container resource limits
-* Redis persistence requirements
 * Redis high availability
-* Database-backed storage where required
+* Database-backed storage
 * Automated testing
 * CI/CD
-* Production reverse-proxy configuration
-* Backup and recovery procedures
+* Backup and recovery
 * Monitoring and observability
 
----
-
-# Scalability Direction
-
-The current architecture is intentionally simple, but it is designed so that individual components can be scaled independently.
-
-Potential scaling path:
-
-```text
-Current
-
-Nginx
-  │
-FastAPI
-  │
-Redis
-  │
-LabPortal
-```
-
-Future:
-
-```text
-                 Load Balancer
-                      │
-          ┌───────────┼───────────┐
-          ▼           ▼           ▼
-       API #1       API #2       API #3
-          │           │           │
-          └───────────┼───────────┘
-                      ▼
-                Redis Cluster
-                      │
-                      ▼
-                 LabPortal
-```
-
-This separation allows the backend layer to scale horizontally while maintaining a shared cache.
-
-Future infrastructure may also introduce:
-
-* Dedicated database services
-* Redis Sentinel or Redis Cluster
-* Background workers
-* Message queues
-* CDN/object storage for large media
-* API gateways
-* Centralized observability
-* Service-level authentication
-* Automated deployment pipelines
+These components are infrastructure considerations for larger production deployments rather than requirements of the current release.
 
 ---
 
-# Current Limitations
+# Current Scope
 
-The current version intentionally does **not** include the previously planned AI chat functionality.
+The current release focuses on the core PoC discovery and deliverable experience.
 
-The following are currently outside the scope of this release:
+Included:
 
-* AI-powered PoC chat
-* Ollama integration
-* AI session management
-* AI-generated summaries
-* AI-powered recommendations
-* AI risk assessment
+* PoC Gallery
+* Search
+* Agency filtering
+* Technology filtering
+* Status filtering
+* PoC details
+* Team information
+* Benefits
+* Demonstration videos
+* PoC sharing
+* URL-based navigation
+* External resource links
+* Analytics
+* LabPortal API integration
+* FastAPI backend
+* Redis caching
+* Docker deployment
+* Nginx reverse proxy
 
-These features may be introduced in future releases as separate backend services/modules.
+AI functionality is outside the scope of the current release.
 
-The current application also relies on the external LabPortal API as its primary source for deliverable information.
+Potential future functionality such as AI-powered chat, summaries, recommendations, and risk assessment can be implemented as separate backend services without requiring a redesign of the core gallery architecture.
 
 ---
 
@@ -1230,7 +1068,7 @@ The current application also relies on the external LabPortal API as its primary
 
 This project is intended for internal use.
 
-Unless otherwise specified, all project code, data, assets, and documentation are proprietary and should not be redistributed or used outside the intended organization without authorization.
+Unless otherwise specified, project code, data, assets, and documentation are proprietary and should not be redistributed or used outside the intended organization without authorization.
 
 ---
 
@@ -1238,14 +1076,17 @@ Unless otherwise specified, all project code, data, assets, and documentation ar
 
 | Field            | Details                                              |
 | ---------------- | ---------------------------------------------------- |
-| **Project**      | Digital Lab POC Gallery                              |
+| **Project**      | Digital Lab PoC Gallery                              |
 | **Author**       | Jishnu Setia                                         |
 | **Role**         | AI & Machine Learning Intern                         |
 | **Organization** | Digital Lab Technology                               |
 | **Purpose**      | Centralized gallery for showcasing Proofs of Concept |
 | **Architecture** | Dockerized Nginx + FastAPI + Redis                   |
+| **Frontend**     | HTML5 + CSS3 + JavaScript                            |
+| **Backend**      | Python + FastAPI                                     |
 | **Caching**      | Redis                                                |
 | **External API** | Digital Lab LabPortal                                |
-| **Status**       | Active Development                                   |
+| **Deployment**   | Docker Compose                                       |
+| **Status**       | Completed                                            |
 
 > This project is intended for internal use by Digital Lab Technology.
