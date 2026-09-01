@@ -3,175 +3,296 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Browse and filter proof-of-concept pilot projects by agency, technology, and status.">
+    <meta name="description" content="Browse and filter proof-of-concept pilot projects by agency, technology, and status across RTA Digital Lab and 4IR initiatives.">
 
-    <title>PoC Gallery</title>
+    <title>RTA PoC Gallery | Digital Lab & 4IR</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=Noto+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" href="assets/favicon.png">
+    <script>
+        (function () {
+            const savedTheme = localStorage.getItem("theme");
+            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            const theme = (savedTheme === "dark" || savedTheme === "light") ? savedTheme : (prefersDark ? "dark" : "light");
+            document.documentElement.setAttribute("data-theme", theme);
+        })();
+    </script>
 </head>
 
 <body>
     <div id="app">
 
+        <!-- =====================================================
+            RTA APP HEADER
+        ===================================================== -->
         <header class="header">
             <div class="header-content">
-                <img 
-                    src="assets/logo.png" 
-                    alt="Logo" 
-                    class="logo"
-                    style="width: 200px;">
-                <!-- <div class="header-actions">
-                    <button class="header-button" id="refresh-button" type="button">
-                        Refresh
+                <div class="header-brand-group">
+                    <a href="index.html" class="logo-link" aria-label="Go to RTA PoC Gallery home">
+                        <img 
+                            id="app-logo"
+                            src="assets/rta-logo-color.png" 
+                            alt="RTA — Roads & Transport Authority" 
+                            class="logo">
+                    </a>
+                    <span class="header-program-badge">
+                        <span class="badge-dot"></span>
+                        Digital Lab · 4IR Program
+                    </span>
+                </div>
+
+                <div class="header-actions">
+                    <div class="header-search-hint" id="header-search-hint" title="Press ⌘K or / to search">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                            <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.5"></circle>
+                            <path d="M9.5 9.5L12.5 12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+                        </svg>
+                        <span>Quick search</span>
+                        <kbd class="kbd-shortcut">⌘K</kbd>
+                    </div>
+
+                    <button
+                        id="theme-toggle"
+                        class="theme-toggle"
+                        type="button"
+                        aria-label="Toggle light/dark mode"
+                        title="Toggle light/dark mode"
+                    >
+                        <span id="theme-icon">☀</span>
                     </button>
-                </div> -->
+                </div>
             </div>
         </header>
 
+        <!-- =====================================================
+            MAIN CONTENT
+        ===================================================== -->
         <main class="main-content">
 
-            <section class="filter-bar" role="search" aria-label="Filter proof-of-concepts">
-
-                <!-- SEARCH -->
-                <div class="search-container">
-
-                    <label for="search-input">Search</label>
-
-                    <input
-                        type="text"
-                        id="search-input"
-                        placeholder="Search PoCs..."
-                        autocomplete="off"
-                    >
-
+            <!-- HERO & KPI SUMMARY BAND -->
+            <section class="hero-section" aria-labelledby="hero-title">
+                <div class="hero-content">
+                    <div class="hero-pretitle">Innovation & Emerging Tech</div>
+                    <h1 id="hero-title" class="hero-title">
+                        PoC Gallery <span class="hero-highlight">&amp; Pilot Hub</span>
+                    </h1>
+                    <div class="rta-title-rule" aria-hidden="true"></div>
+                    <p class="hero-description">
+                        One unified catalog for Fourth Industrial Revolution (4IR) and Digital Lab proofs of concept across Dubai's transport network — spanning computer vision, predictive AI, document automation, and intelligent mobility.
+                    </p>
                 </div>
 
-
-                <!-- AGENCY -->
-                <div class="filter-container">
-
-                    <label>Agency</label>
-
-                    <div
-                        class="filter-multi-select"
-                        id="agency-multi-select"
-                    >
-
-                        <button
-                            type="button"
-                            class="filter-trigger"
-                            id="agency-trigger"
-                        >
-
-                            <span id="agency-selected-text">
-                                All Agencies
-                            </span>
-
-                        </button>
-
-                        <div
-                            class="filter-menu"
-                            id="agency-menu"
-                            hidden
-                        ></div>
-
+                <!-- 4-COLUMN KPI METRIC BAND -->
+                <div class="kpi-band" aria-label="Gallery summary statistics">
+                    <div class="kpi-card" id="kpi-total-card">
+                        <div class="kpi-label">Total Volume</div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="kpi-total-pocs">0</span>
+                            <span class="kpi-badge kpi-badge-neutral">Prototypes</span>
+                        </div>
+                        <div class="kpi-subtext">Active 4IR deliverables</div>
                     </div>
 
-                </div>
-
-
-                <!-- TECHNOLOGY -->
-                <div class="filter-container">
-
-                    <label>Technology</label>
-
-                    <div
-                        class="filter-multi-select"
-                        id="technology-multi-select"
-                    >
-
-                        <button
-                            type="button"
-                            class="filter-trigger"
-                            id="technology-trigger"
-                        >
-
-                            <span id="technology-selected-text">
-                                All Technologies
-                            </span>
-
-                        </button>
-
-                        <div
-                            class="filter-menu"
-                            id="technology-menu"
-                            hidden
-                        ></div>
-
+                    <div class="kpi-card" id="kpi-agencies-card">
+                        <div class="kpi-label">Agencies &amp; Sectors</div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="kpi-total-agencies">0</span>
+                            <span class="kpi-badge kpi-badge-info">RTA Units</span>
+                        </div>
+                        <div class="kpi-subtext">Collaborative pilots</div>
                     </div>
 
-                </div>
-
-
-                <!-- STATUS -->
-                <div class="filter-container">
-
-                    <label>Status</label>
-
-                    <div
-                        class="filter-multi-select"
-                        id="status-multi-select"
-                    >
-
-                        <button
-                            type="button"
-                            class="filter-trigger"
-                            id="status-trigger"
-                        >
-
-                            <span id="status-selected-text">
-                                All Statuses
-                            </span>
-
-                        </button>
-
-                        <div
-                            class="filter-menu"
-                            id="status-menu"
-                            hidden
-                        ></div>
-
+                    <div class="kpi-card" id="kpi-tech-card">
+                        <div class="kpi-label">Tech Disciplines</div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="kpi-total-tech">0</span>
+                            <span class="kpi-badge kpi-badge-focus">AI &amp; Data</span>
+                        </div>
+                        <div class="kpi-subtext">ML, CV, NLP &amp; Cloud</div>
                     </div>
 
+                    <div class="kpi-card" id="kpi-status-card">
+                        <div class="kpi-label">Completed / Live</div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value kpi-value-gradient" id="kpi-completed-pocs">0</span>
+                            <span class="kpi-badge kpi-badge-success">▲ Ready</span>
+                        </div>
+                        <div class="kpi-subtext">Production &amp; pilot ready</div>
+                    </div>
                 </div>
-
             </section>
 
+            <!-- FILTER BAR -->
+            <section class="filter-bar-wrapper">
+                <div class="filter-bar" role="search" aria-label="Filter proof-of-concepts">
+
+                    <!-- SEARCH -->
+                    <div class="search-container">
+                        <label for="search-input">Search Gallery</label>
+                        <div class="search-input-wrapper">
+                            <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                                <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"></circle>
+                                <path d="M11 11L14.5 14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+                            </svg>
+                            <input
+                                type="text"
+                                id="search-input"
+                                placeholder="Search by title, agency, technology, or keywords…"
+                                autocomplete="off"
+                            >
+                            <button type="button" id="search-clear-btn" class="search-clear-btn" aria-label="Clear search" hidden>×</button>
+                        </div>
+                    </div>
+
+                    <div class="filters-dropdown-group">
+                        <!-- AGENCY -->
+                        <div class="filter-container">
+                            <label id="agency-label">Agency / Sector</label>
+                            <div
+                                class="filter-multi-select"
+                                id="agency-multi-select"
+                            >
+                                <button
+                                    type="button"
+                                    class="filter-trigger"
+                                    id="agency-trigger"
+                                    aria-haspopup="listbox"
+                                    aria-expanded="false"
+                                    aria-labelledby="agency-label agency-selected-text"
+                                >
+                                    <span id="agency-selected-text" class="trigger-text">
+                                        All Agencies
+                                    </span>
+                                    <svg class="trigger-chevron" width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden="true">
+                                        <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                                    </svg>
+                                </button>
+                                <div
+                                    class="filter-menu"
+                                    id="agency-menu"
+                                    role="listbox"
+                                    hidden
+                                ></div>
+                            </div>
+                        </div>
+
+                        <!-- TECHNOLOGY -->
+                        <div class="filter-container">
+                            <label id="tech-label">Technology</label>
+                            <div
+                                class="filter-multi-select"
+                                id="technology-multi-select"
+                            >
+                                <button
+                                    type="button"
+                                    class="filter-trigger"
+                                    id="technology-trigger"
+                                    aria-haspopup="listbox"
+                                    aria-expanded="false"
+                                    aria-labelledby="tech-label technology-selected-text"
+                                >
+                                    <span id="technology-selected-text" class="trigger-text">
+                                        All Technologies
+                                    </span>
+                                    <svg class="trigger-chevron" width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden="true">
+                                        <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                                    </svg>
+                                </button>
+                                <div
+                                    class="filter-menu"
+                                    id="technology-menu"
+                                    role="listbox"
+                                    hidden
+                                ></div>
+                            </div>
+                        </div>
+
+                        <!-- STATUS -->
+                        <div class="filter-container">
+                            <label id="status-label">Status</label>
+                            <div
+                                class="filter-multi-select"
+                                id="status-multi-select"
+                            >
+                                <button
+                                    type="button"
+                                    class="filter-trigger"
+                                    id="status-trigger"
+                                    aria-haspopup="listbox"
+                                    aria-expanded="false"
+                                    aria-labelledby="status-label status-selected-text"
+                                >
+                                    <span id="status-selected-text" class="trigger-text">
+                                        All Statuses
+                                    </span>
+                                    <svg class="trigger-chevron" width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden="true">
+                                        <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                                    </svg>
+                                </button>
+                                <div
+                                    class="filter-menu"
+                                    id="status-menu"
+                                    role="listbox"
+                                    hidden
+                                ></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ACTIVE FILTER CHIPS ROW -->
+                <div class="active-filters-row" id="active-filters-row" hidden>
+                    <span class="active-filters-label">Active Filters:</span>
+                    <div class="active-chips-container" id="active-chips-container"></div>
+                    <button type="button" id="clear-all-filters-btn" class="clear-all-btn">
+                        Clear All
+                    </button>
+                </div>
+            </section>
+
+            <!-- DASHBOARD / GALLERY SECTION -->
             <section class="dashboard">
                 <section class="gallery-section" aria-labelledby="gallery-heading">
                     <div class="section-header">
                         <div>
-                            <h2 id="gallery-heading" style="color: white;">Proof of Concepts</h2>
-                            <p id="poc-count" aria-live="polite" aria-atomic="true">0 PoCs</p>
+                            <div class="section-overline">Catalog Records</div>
+                            <h2 id="gallery-heading">Proof of Concepts</h2>
+                            <div class="rta-title-rule-sm" aria-hidden="true"></div>
+                        </div>
+                        <div class="section-meta-right">
+                            <span id="poc-count" class="count-pill" aria-live="polite" aria-atomic="true">0 PoCs</span>
                         </div>
                     </div>
 
+                    <!-- GRID OF CARDS -->
                     <div
                         class="poc-grid"
                         id="poc-grid"
                         aria-live="polite"
                     ></div>
 
+                    <!-- EMPTY STATE -->
                     <div class="empty-state" id="empty-state" hidden>
-                        <h3>No PoCs found</h3>
-                        <p>Try changing your search or filters.</p>
+                        <div class="empty-state-icon" aria-hidden="true"></div>
+                        <h3>No matching PoCs found</h3>
+                        <p>Try widening your search terms or clearing one or more filters.</p>
+                        <button type="button" class="btn-secondary" id="empty-clear-btn">
+                            Reset All Filters
+                        </button>
                     </div>
                 </section>
             </section>
 
         </main>
 
+        <!-- =====================================================
+            MODAL DRAWER (DRILL-DOWN)
+        ===================================================== -->
         <div
             class="modal-overlay"
             id="details-modal"
@@ -184,7 +305,10 @@
                 aria-labelledby="modal-title"
             >
                 <div class="modal-header">
-                    <h2 id="modal-title">PoC Details</h2>
+                    <div>
+                        <div class="modal-overline">PoC Detailed Evidence</div>
+                        <h2 id="modal-title">PoC Details</h2>
+                    </div>
                     <button
                         class="close-button"
                         id="close-modal"
@@ -199,6 +323,122 @@
             </div>
         </div>
 
+        <!-- FOOTER -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="assets/rta-logo-color.png" alt="RTA Logo" class="footer-logo">
+                    <div class="footer-text">
+                        <span>Roads &amp; Transport Authority · Government of Dubai</span>
+                        <span>Digital Lab &amp; Fourth Industrial Revolution (4IR) Program</span>
+                    </div>
+                </div>
+                <div class="footer-copy">
+                    Designed in accordance with the RTA PoC Design System Standards
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- =====================================================
+        AI CHATBOT (RTA POC ASSISTANT)
+    ===================================================== -->
+    <button
+        id="chatbot-toggle"
+        class="chatbot-toggle"
+        type="button"
+        aria-label="Open PoC Assistant"
+        title="Open PoC Assistant"
+    >
+        <span class="chatbot-sparkle">✦</span>
+        <span class="chatbot-toggle-text">Assistant</span>
+    </button>
+
+    <div
+        id="chatbot"
+        class="chatbot"
+        hidden
+    >
+        <div class="chatbot-header">
+            <div class="chatbot-header-info">
+                <div class="chatbot-avatar">
+                    ✦
+                </div>
+                <div>
+                    <h3>PoC Assistant</h3>
+                    <span>RTA Digital Lab AI Assistant</span>
+                </div>
+            </div>
+
+            <button
+                id="chatbot-close"
+                class="chatbot-close"
+                type="button"
+                aria-label="Close chatbot"
+            >
+                &times;
+            </button>
+        </div>
+
+        <div
+            id="chatbot-messages"
+            class="chatbot-messages"
+        >
+            <div class="chatbot-message assistant">
+                <div class="message-avatar">
+                    ✦
+                </div>
+                <div class="message-content">
+                    <p>
+                        Welcome to the <strong>RTA PoC Assistant</strong>.
+                    </p>
+                    <p>
+                        I can help you explore proof of concepts across agencies, search specific technologies, or explain pilot results. What would you like to explore?
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="chatbot-suggestions">
+            <button
+                type="button"
+                class="chat-suggestion"
+            >
+                Which PoCs use Computer Vision?
+            </button>
+            <button
+                type="button"
+                class="chat-suggestion"
+            >
+                Show me completed pilots
+            </button>
+            <button
+                type="button"
+                class="chat-suggestion"
+            >
+                What PoCs are related to buses &amp; transit?
+            </button>
+        </div>
+
+        <form
+            id="chatbot-form"
+            class="chatbot-input-area"
+        >
+            <input
+                id="chatbot-input"
+                type="text"
+                placeholder="Ask a question about the PoC catalog…"
+                autocomplete="off"
+            >
+            <button
+                id="chatbot-send"
+                type="submit"
+                aria-label="Send message"
+            >
+                ↑
+            </button>
+        </form>
     </div>
 
     <script src="js/app.js"></script>

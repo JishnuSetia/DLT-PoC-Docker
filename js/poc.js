@@ -682,27 +682,24 @@ function renderBenefits(benefits) {
     }
 
     return `
-        <section class="details-section">
+        <section class="poc-benefits-section">
 
-            <h2>
-                Benefits
-            </h2>
+            <div class="poc-section-title">Key Benefits</div>
 
-            <ul class="benefits-list">
+            <div class="poc-benefits-grid">
 
                 ${benefits
                     .map(
                         benefit => `
-                            <li>
-                                ${escapeHTML(
-                                    benefit
-                                )}
-                            </li>
+                            <div class="poc-benefit-item">
+                                <div class="poc-benefit-icon">✓</div>
+                                <span>${escapeHTML(benefit)}</span>
+                            </div>
                         `
                     )
                     .join("")}
 
-            </ul>
+            </div>
 
         </section>
     `;
@@ -734,21 +731,17 @@ function renderTechnologies(technology) {
             : [technology];
 
     return `
-        <section class="details-section">
+        <section class="poc-technologies-section">
 
-            <h2>
-                Technology Stack
-            </h2>
+            <div class="poc-section-title">Technology Stack</div>
 
-            <div class="tech-stack">
+            <div class="poc-tech-tags">
 
                 ${technologies
                     .map(
                         tech => `
-                            <span class="tech-badge">
-                                ${escapeHTML(
-                                    tech
-                                )}
+                            <span class="poc-tech-tag">
+                                ${escapeHTML(tech)}
                             </span>
                         `
                     )
@@ -779,13 +772,13 @@ function renderTeam(team) {
     }
 
     return `
-        <section class="details-section">
+        <section class="poc-team-section">
 
-            <h2>
+            <div class="poc-team-header">
                 Team
-            </h2>
+            </div>
 
-            <div class="team-grid">
+            <div class="poc-team-grid">
 
                 ${team
                     .map(member => {
@@ -810,34 +803,23 @@ function renderTeam(team) {
                             "assets/images/person1.jpg";
 
                         return `
-                            <div class="team-member">
+                            <div class="poc-team-member-card">
 
-                                <div class="team-avatar">
+                                <img
+                                    class="poc-team-avatar"
+                                    src="${escapeAttribute(picture)}"
+                                    alt="${escapeAttribute(name)}"
+                                    loading="lazy"
+                                    onerror="
+                                        this.onerror=null;
+                                        this.src='assets/images/person1.jpg';
+                                    "
+                                >
 
-                                    <img
-                                        src="${escapeAttribute(
-                                            picture
-                                        )}"
-                                        alt="${escapeAttribute(
-                                            name
-                                        )}"
-                                        loading="lazy"
-                                        onerror="
-                                            this.onerror=null;
-                                            this.src='assets/images/person1.jpg';
-                                        "
-                                    >
-
-                                </div>
-
-                                <div class="team-member-info">
-
-                                    <strong>
-                                        ${escapeHTML(
-                                            name
-                                        )}
-                                    </strong>
-
+                                <div class="poc-team-info">
+                                    <div class="poc-team-name">
+                                        ${escapeHTML(name)}
+                                    </div>
                                 </div>
 
                             </div>
@@ -1026,3 +1008,61 @@ function escapeAttribute(value = "") {
 
     return escapeHTML(value);
 }
+
+/* =========================================================
+   THEME CONTROLLER (LIGHT / DARK MODE)
+========================================================= */
+
+const themeToggle = document.getElementById("theme-toggle");
+const themeIcon = document.getElementById("theme-icon");
+
+function updateThemeLogo(theme) {
+    const logos = document.querySelectorAll("#app-logo, .logo");
+    logos.forEach(logo => {
+        if (logo && logo.tagName === "IMG") {
+            logo.src = theme === "light"
+                ? "assets/rta-logo-color.png"
+                : "assets/rta-logo-white.png";
+        }
+    });
+}
+
+function setTheme(theme) {
+    const isDark = theme === "dark";
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+
+    if (themeIcon) {
+        themeIcon.textContent = isDark ? "☀" : "☾";
+    }
+
+    if (themeToggle) {
+        const nextMode = isDark ? "light" : "dark";
+        themeToggle.setAttribute("aria-label", `Switch to ${nextMode} mode`);
+        themeToggle.setAttribute("title", `Switch to ${nextMode} mode`);
+    }
+
+    updateThemeLogo(theme);
+}
+
+// Restore saved theme or fallback to system preference
+const savedTheme = localStorage.getItem("theme");
+if (savedTheme === "dark" || savedTheme === "light") {
+    setTheme(savedTheme);
+} else {
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    setTheme(prefersDark ? "dark" : "light");
+}
+
+// Listen for system theme changes if user hasn't explicitly set preference
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+    if (!localStorage.getItem("theme")) {
+        setTheme(e.matches ? "dark" : "light");
+    }
+});
+
+// Toggle button click handler
+themeToggle?.addEventListener("click", () => {
+    const currentTheme = document.documentElement.getAttribute("data-theme") || "dark";
+    setTheme(currentTheme === "dark" ? "light" : "dark");
+});

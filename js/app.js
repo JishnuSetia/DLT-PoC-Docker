@@ -1828,6 +1828,10 @@ function filterPoCs() {
         );
 
 
+    updateKPIStats(filteredPoCs);
+
+    updateActiveFilterChips();
+
     renderPoCs(
         filteredPoCs
     );
@@ -1985,6 +1989,113 @@ if (
    INITIALIZE APPLICATION
 ========================================================= */
 
+/* =========================================================
+   KPI STAT BAND
+========================================================= */
+
+function updateKPIStats(data) {
+
+    const totalPoCs = document.getElementById("kpi-total-pocs");
+    const totalAgencies = document.getElementById("kpi-total-agencies");
+    const totalTech = document.getElementById("kpi-total-tech");
+    const completedPoCs = document.getElementById("kpi-completed-pocs");
+
+    if (!data || data.length === 0) {
+        if (totalPoCs)    totalPoCs.textContent    = "0";
+        if (totalAgencies) totalAgencies.textContent = "0";
+        if (totalTech)    totalTech.textContent    = "0";
+        if (completedPoCs) completedPoCs.textContent = "0";
+        return;
+    }
+
+    const agencies = new Set();
+    const techs    = new Set();
+    let   completed = 0;
+
+    data.forEach(poc => {
+
+        if (poc.agency) agencies.add(poc.agency);
+
+        if (Array.isArray(poc.technologies)) {
+            poc.technologies.forEach(t => techs.add(t));
+        }
+
+        const cls = statusClassFor(displayStatus(poc.status));
+        if (cls === "complete") completed++;
+    });
+
+    if (totalPoCs)     totalPoCs.textContent     = data.length;
+    if (totalAgencies) totalAgencies.textContent  = agencies.size;
+    if (totalTech)     totalTech.textContent      = techs.size;
+    if (completedPoCs) completedPoCs.textContent  = completed;
+}
+
+
+/* =========================================================
+   ACTIVE FILTER CHIPS
+========================================================= */
+
+function updateActiveFilterChips() {
+
+    const row      = document.getElementById("active-filters-row");
+    const container = document.getElementById("active-chips-container");
+
+    if (!row || !container) return;
+
+    container.innerHTML = "";
+
+    const allSelected = [
+        ...selectedAgencies.map(v => ({ type: "agency",     label: v })),
+        ...selectedTechnologies.map(v => ({ type: "technology", label: v })),
+        ...selectedStatuses.map(v => ({ type: "status",    label: v }))
+    ];
+
+    if (allSelected.length === 0) {
+        row.hidden = true;
+        return;
+    }
+
+    row.hidden = false;
+
+    allSelected.forEach(({ type, label }) => {
+
+        const chip = document.createElement("span");
+        chip.className = "active-chip";
+        chip.innerHTML = `
+            <span>${escapeHTML(label)}</span>
+            <button
+                type="button"
+                class="chip-remove"
+                aria-label="Remove ${escapeAttribute(label)} filter"
+            >&times;</button>
+        `;
+
+        chip.querySelector(".chip-remove").addEventListener("click", () => {
+
+            const config = filterConfigs[type];
+            if (!config || !config.menu) return;
+
+            const checkbox = [...config.menu.querySelectorAll("input[type=checkbox]")]
+                .find(cb => cb.value === label);
+
+            if (checkbox) {
+                checkbox.checked = false;
+            }
+
+            updateFilterSelection(type);
+            updateToggleAllButton(config);
+            filterPoCs();
+        });
+
+        container.appendChild(chip);
+    });
+}
+
+
+/* =========================================================
+   INITIALIZE APPLICATION
+========================================================= */
+
 async function initializeApp() {
 
     try {
@@ -1998,6 +2109,13 @@ async function initializeApp() {
         */
 
         populateFilters();
+
+
+        /*
+            Populate KPI stat band.
+        */
+
+        updateKPIStats(pocData);
 
 
         /*
@@ -2028,11 +2146,756 @@ async function initializeApp() {
         );
 
 
-        renderPoCs(
-            []
+        updateKPIStats([]);
+        renderPoCs([]);
+
+    }
+
+}
+
+/* =========================================================
+   AI CHATBOT
+========================================================= */
+
+const chatbot =
+    document.getElementById("chatbot");
+
+const chatbotToggle =
+    document.getElementById("chatbot-toggle");
+
+const chatbotClose =
+    document.getElementById("chatbot-close");
+
+const chatbotMessages =
+    document.getElementById("chatbot-messages");
+
+const chatbotForm =
+    document.getElementById("chatbot-form");
+
+const chatbotInput =
+    document.getElementById("chatbot-input");
+
+const chatbotSend =
+    document.getElementById("chatbot-send");
+
+const chatSuggestions =
+    document.querySelectorAll(
+        ".chat-suggestion"
+    );
+
+
+let chatbotHistory = [];
+
+
+/* =========================================================
+   OPEN CHATBOT
+========================================================= */
+
+function openChatbot() {
+
+    if (!chatbot) {
+        return;
+    }
+
+    chatbot.hidden = false;
+
+    requestAnimationFrame(() => {
+
+        chatbot.classList.add("visible");
+
+    });
+
+    if (chatbotInput) {
+
+        setTimeout(() => {
+
+            chatbotInput.focus();
+
+        }, 100);
+
+    }
+
+}
+
+
+/* =========================================================
+   CLOSE CHATBOT
+========================================================= */
+
+function closeChatbot() {
+
+    if (!chatbot) {
+        return;
+    }
+
+    chatbot.classList.remove("visible");
+
+    setTimeout(() => {
+
+        chatbot.hidden = true;
+
+    }, 200);
+
+}
+
+
+/* =========================================================
+   TOGGLE
+========================================================= */
+
+if (chatbotToggle) {
+
+    chatbotToggle.addEventListener(
+        "click",
+        () => {
+
+            if (chatbot.hidden) {
+
+                openChatbot();
+
+            } else {
+
+                closeChatbot();
+
+            }
+
+        }
+    );
+
+}
+
+
+if (chatbotClose) {
+
+    chatbotClose.addEventListener(
+        "click",
+        closeChatbot
+    );
+
+}
+
+
+/* =========================================================
+   ADD MESSAGE
+========================================================= */
+
+function addChatMessage(
+    content,
+    role
+) {
+
+    if (!chatbotMessages) {
+        return;
+    }
+
+
+    const message =
+        document.createElement("div");
+
+    message.className =
+        `chatbot-message ${role}`;
+
+
+    const avatar =
+        document.createElement("div");
+
+    avatar.className =
+        role === "assistant"
+            ? "message-avatar"
+            : "message-avatar user";
+
+
+    avatar.textContent =
+        role === "assistant"
+            ? "✦"
+            : "You";
+
+
+    const messageContent =
+        document.createElement("div");
+
+    messageContent.className =
+        "message-content";
+
+
+    const paragraph =
+        document.createElement("p");
+
+
+    /*
+        Basic formatting.
+
+        Convert newlines to <br>.
+    */
+
+    paragraph.innerHTML =
+        escapeHTML(content)
+            .replace(
+                /\n/g,
+                "<br>"
+            );
+
+
+    messageContent.appendChild(
+        paragraph
+    );
+
+
+    message.appendChild(
+        avatar
+    );
+
+    message.appendChild(
+        messageContent
+    );
+
+
+    chatbotMessages.appendChild(
+        message
+    );
+
+
+    scrollChatToBottom();
+
+}
+
+
+/* =========================================================
+   TYPING INDICATOR
+========================================================= */
+
+function showTypingIndicator() {
+
+    if (!chatbotMessages) {
+        return;
+    }
+
+
+    const typing =
+        document.createElement("div");
+
+    typing.id =
+        "chatbot-typing";
+
+    typing.className =
+        "chatbot-message assistant";
+
+
+    typing.innerHTML = `
+
+        <div class="message-avatar">
+            ✦
+        </div>
+
+        <div class="message-content typing-content">
+
+            <span></span>
+            <span></span>
+            <span></span>
+
+        </div>
+
+    `;
+
+
+    chatbotMessages.appendChild(
+        typing
+    );
+
+
+    scrollChatToBottom();
+
+}
+
+
+function removeTypingIndicator() {
+
+    const typing =
+        document.getElementById(
+            "chatbot-typing"
+        );
+
+    if (typing) {
+
+        typing.remove();
+
+    }
+
+}
+
+
+/* =========================================================
+   SCROLL
+========================================================= */
+
+function scrollChatToBottom() {
+
+    if (!chatbotMessages) {
+        return;
+    }
+
+    chatbotMessages.scrollTop =
+        chatbotMessages.scrollHeight;
+
+}
+
+
+/* =========================================================
+   SEND MESSAGE
+========================================================= */
+
+async function sendChatMessage(
+    message
+) {
+
+    message =
+        message.trim();
+
+
+    if (!message) {
+        return;
+    }
+
+
+    /*
+        Show user message.
+    */
+
+    addChatMessage(
+        message,
+        "user"
+    );
+
+
+    /*
+        Disable input while waiting.
+    */
+
+    if (chatbotInput) {
+
+        chatbotInput.disabled =
+            true;
+
+    }
+
+
+    if (chatbotSend) {
+
+        chatbotSend.disabled =
+            true;
+
+    }
+
+
+    /*
+        Typing indicator.
+    */
+
+    showTypingIndicator();
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/chat",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        message: message,
+
+                        history:
+                            chatbotHistory
+
+                    })
+
+                }
+            );
+
+
+        if (!response.ok) {
+
+            const error =
+                await response.json()
+                    .catch(
+                        () => null
+                    );
+
+            throw new Error(
+                error?.detail ||
+                `Request failed: ${response.status}`
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        const answer =
+            data.response ||
+            "I couldn't find an answer.";
+
+
+        /*
+            Remove typing.
+        */
+
+        removeTypingIndicator();
+
+
+        /*
+            Add assistant response.
+        */
+
+        addChatMessage(
+            answer,
+            "assistant"
+        );
+
+
+        /*
+            Save history.
+
+            IMPORTANT:
+            Only save the actual conversation,
+            not the internal PoC context.
+        */
+
+        chatbotHistory.push(
+            {
+                role: "user",
+                content: message
+            }
+        );
+
+
+        chatbotHistory.push(
+            {
+                role: "assistant",
+                content: answer
+            }
+        );
+
+
+        /*
+            Keep history manageable.
+        */
+
+        if (
+            chatbotHistory.length > 12
+        ) {
+
+            chatbotHistory =
+                chatbotHistory.slice(-12);
+
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Chatbot error:",
+            error
+        );
+
+
+        removeTypingIndicator();
+
+
+        addChatMessage(
+            "Sorry, I couldn't connect to the PoC Assistant right now.",
+            "assistant"
         );
 
     }
+
+
+    /*
+        Re-enable input.
+    */
+
+    if (chatbotInput) {
+
+        chatbotInput.disabled =
+            false;
+
+        chatbotInput.focus();
+
+    }
+
+
+    if (chatbotSend) {
+
+        chatbotSend.disabled =
+            false;
+
+    }
+
+}
+
+
+/* =========================================================
+   FORM SUBMISSION
+========================================================= */
+
+if (chatbotForm) {
+
+    chatbotForm.addEventListener(
+        "submit",
+        event => {
+
+            event.preventDefault();
+
+
+            if (!chatbotInput) {
+                return;
+            }
+
+
+            const message =
+                chatbotInput.value.trim();
+
+
+            if (!message) {
+                return;
+            }
+
+
+            chatbotInput.value = "";
+
+
+            sendChatMessage(
+                message
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   SUGGESTED QUESTIONS
+========================================================= */
+
+chatSuggestions.forEach(
+    button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                const question =
+                    button.textContent.trim();
+
+
+                if (chatbotInput) {
+
+                    chatbotInput.value =
+                        question;
+
+                }
+
+
+                sendChatMessage(
+                    question
+                );
+
+            }
+        );
+
+    }
+);
+
+/* =========================================================
+   THEME CONTROLLER (LIGHT / DARK MODE)
+========================================================= */
+
+const themeToggle = document.getElementById("theme-toggle");
+const themeIcon = document.getElementById("theme-icon");
+
+function updateThemeLogo(theme) {
+    const logos = document.querySelectorAll("#app-logo, .logo");
+    logos.forEach(logo => {
+        if (logo && logo.tagName === "IMG") {
+            logo.src = theme === "light"
+                ? "assets/rta-logo-color.png"
+                : "assets/rta-logo-white.png";
+        }
+    });
+}
+
+function setTheme(theme) {
+    const isDark = theme === "dark";
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+
+    if (themeIcon) {
+        themeIcon.textContent = isDark ? "☀" : "☾";
+    }
+
+    if (themeToggle) {
+        const nextMode = isDark ? "light" : "dark";
+        themeToggle.setAttribute("aria-label", `Switch to ${nextMode} mode`);
+        themeToggle.setAttribute("title", `Switch to ${nextMode} mode`);
+    }
+
+    updateThemeLogo(theme);
+}
+
+// Restore saved theme or fallback to system preference
+const savedTheme = localStorage.getItem("theme");
+if (savedTheme === "dark" || savedTheme === "light") {
+    setTheme(savedTheme);
+} else {
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    setTheme(prefersDark ? "dark" : "light");
+}
+
+// Listen for system theme changes if user hasn't explicitly set preference
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+    if (!localStorage.getItem("theme")) {
+        setTheme(e.matches ? "dark" : "light");
+    }
+});
+
+// Toggle button click handler
+themeToggle?.addEventListener("click", () => {
+    const currentTheme = document.documentElement.getAttribute("data-theme") || "dark";
+    setTheme(currentTheme === "dark" ? "light" : "dark");
+});
+
+/* =========================================================
+   SEARCH KEYBOARD SHORTCUT  (⌘K / Ctrl+K / /)
+========================================================= */
+
+document.addEventListener("keydown", event => {
+
+    const tag = (event.target.tagName || "").toUpperCase();
+    const isEditable =
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        event.target.isContentEditable;
+
+    const isShortcut =
+        (event.key === "k" && (event.metaKey || event.ctrlKey)) ||
+        (event.key === "/" && !isEditable);
+
+    if (!isShortcut) return;
+
+    event.preventDefault();
+
+    if (searchInput) {
+        searchInput.focus();
+        searchInput.select();
+    }
+
+});
+
+
+/* =========================================================
+   SEARCH CLEAR BUTTON
+========================================================= */
+
+const searchClearBtn = document.getElementById("search-clear-btn");
+
+if (searchInput && searchClearBtn) {
+
+    searchInput.addEventListener("input", () => {
+        searchClearBtn.hidden = searchInput.value.trim() === "";
+    });
+
+    searchClearBtn.addEventListener("click", () => {
+        searchInput.value = "";
+        searchClearBtn.hidden = true;
+        searchInput.focus();
+        filterPoCs();
+    });
+
+}
+
+
+/* =========================================================
+   CLEAR ALL FILTERS BUTTON  (in active chips row)
+========================================================= */
+
+const clearAllFiltersBtn = document.getElementById("clear-all-filters-btn");
+
+if (clearAllFiltersBtn) {
+
+    clearAllFiltersBtn.addEventListener("click", () => {
+
+        /* Uncheck every checkbox in every filter menu */
+        Object.values(filterConfigs).forEach(config => {
+
+            if (!config.menu) return;
+
+            config.menu
+                .querySelectorAll("input[type=checkbox]")
+                .forEach(cb => { cb.checked = false; });
+
+            updateFilterSelection(
+                Object.keys(filterConfigs)
+                    .find(k => filterConfigs[k] === config)
+            );
+
+            updateToggleAllButton(config);
+
+        });
+
+        filterPoCs();
+
+    });
+
+}
+
+
+/* =========================================================
+   EMPTY STATE CLEAR-FILTERS BUTTON
+========================================================= */
+
+const emptyClearBtn = document.getElementById("empty-clear-btn");
+
+if (emptyClearBtn) {
+
+    emptyClearBtn.addEventListener("click", () => {
+
+        /* Reset search */
+        if (searchInput) {
+            searchInput.value = "";
+            if (searchClearBtn) searchClearBtn.hidden = true;
+        }
+
+        /* Uncheck every checkbox */
+        Object.values(filterConfigs).forEach(config => {
+
+            if (!config.menu) return;
+
+            config.menu
+                .querySelectorAll("input[type=checkbox]")
+                .forEach(cb => { cb.checked = false; });
+
+            updateFilterSelection(
+                Object.keys(filterConfigs)
+                    .find(k => filterConfigs[k] === config)
+            );
+
+            updateToggleAllButton(config);
+
+        });
+
+        filterPoCs();
+
+    });
 
 }
 

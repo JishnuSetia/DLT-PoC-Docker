@@ -30,7 +30,7 @@ LABPORTAL_API_KEY = os.getenv("LABPORTAL_API_KEY")
 # REDIS CACHE
 # =========================================================
 
-CACHE_TTL = 300  # 5 minutes
+CACHE_TTL = 84600
 
 DELIVERABLES_CACHE_KEY = "deliverables:all"
 
