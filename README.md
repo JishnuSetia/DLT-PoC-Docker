@@ -7,13 +7,20 @@ The application provides a centralized interface for browsing technology-focused
 > **Current Version:** Production-ready internal release using a Dockerized Nginx + FastAPI architecture with Redis caching.
 
 ---
+
 # Screenshots
 
-## Main Page
+## Main Page - Dark Mode
 <img src="assets/demo-readme/main.png">
 
-## PoC Details
+## PoC Details - Dark Mode
 <img src="assets/demo-readme/poc.png">
+
+## Main Page - Light Mode
+<img src="assets/demo-readme/main-l.png">
+
+## PoC Details - Light Mode
+<img src="assets/demo-readme/poc-l.png">
 
 ---
 
