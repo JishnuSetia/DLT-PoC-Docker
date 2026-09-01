@@ -1178,7 +1178,10 @@ a:hover {
     white-space: nowrap;
 }
 
-/* Status Badges with Colored Dots */
+/* =========================================================
+   STATUS BADGES
+========================================================= */
+
 .status-badge {
     display: inline-flex;
     align-items: center;
@@ -1191,6 +1194,7 @@ a:hover {
     letter-spacing: 0.02em;
     flex: none;
     line-height: 1;
+    white-space: nowrap;
 }
 
 .status-badge::before {
@@ -1199,40 +1203,59 @@ a:hover {
     height: 5px;
     border-radius: 50%;
     background: currentColor;
+    flex: none;
 }
 
-.status-badge.completed,
-.status-badge.live,
-.status-badge.processed,
-.status-badge.success {
+/* ---------------------------------------------------------
+   COMPLETE
+--------------------------------------------------------- */
+
+.status-badge.complete,
+.status-badge.completed {
     background: var(--success-bg);
     color: var(--success-text);
 }
 
+/* ---------------------------------------------------------
+   IN PROGRESS
+--------------------------------------------------------- */
+
+.status-badge.progress,
 .status-badge.in-progress,
-.status-badge.in_progress,
+.status-badge.in_progress {
+    background: var(--info-bg);
+    color: var(--info-text);
+}
+
+/* ---------------------------------------------------------
+   REVIEW
+--------------------------------------------------------- */
+
+.status-badge.review,
 .status-badge.needs-review {
     background: var(--warning-bg);
     color: var(--warning-text);
 }
 
-.status-badge.discovery,
-.status-badge.info {
-    background: var(--info-bg);
-    color: var(--info-text);
-}
+/* ---------------------------------------------------------
+   PLANNING / NOT STARTED
+--------------------------------------------------------- */
 
-.status-badge.on-hold,
-.status-badge.blocked,
-.status-badge.danger {
-    background: var(--danger-bg);
-    color: var(--danger-text);
-}
-
-.status-badge.archived,
-.status-badge.neutral {
+.status-badge.planning,
+.status-badge.not-started,
+.status-badge.discovery {
     background: var(--neutral-bg);
     color: var(--neutral-text);
+}
+
+/* ---------------------------------------------------------
+   ON HOLD / BLOCKED
+--------------------------------------------------------- */
+
+.status-badge.blocked,
+.status-badge.on-hold {
+    background: var(--danger-bg);
+    color: var(--danger-text);
 }
 
 .poc-card h3 {
