@@ -1206,19 +1206,11 @@ a:hover {
     flex: none;
 }
 
-/* ---------------------------------------------------------
-   COMPLETE
---------------------------------------------------------- */
-
 .status-badge.complete,
 .status-badge.completed {
     background: var(--success-bg);
     color: var(--success-text);
 }
-
-/* ---------------------------------------------------------
-   IN PROGRESS
---------------------------------------------------------- */
 
 .status-badge.progress,
 .status-badge.in-progress,
@@ -1227,19 +1219,11 @@ a:hover {
     color: var(--info-text);
 }
 
-/* ---------------------------------------------------------
-   REVIEW
---------------------------------------------------------- */
-
 .status-badge.review,
 .status-badge.needs-review {
     background: var(--warning-bg);
     color: var(--warning-text);
 }
-
-/* ---------------------------------------------------------
-   PLANNING / NOT STARTED
---------------------------------------------------------- */
 
 .status-badge.planning,
 .status-badge.not-started,
@@ -1247,10 +1231,6 @@ a:hover {
     background: var(--neutral-bg);
     color: var(--neutral-text);
 }
-
-/* ---------------------------------------------------------
-   ON HOLD / BLOCKED
---------------------------------------------------------- */
 
 .status-badge.blocked,
 .status-badge.on-hold {
