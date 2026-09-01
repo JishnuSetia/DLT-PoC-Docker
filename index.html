@@ -75,6 +75,597 @@
 
             <!-- HERO & KPI SUMMARY BAND -->
             <section class="hero-section" aria-labelledby="hero-title">
+                <canvas class="constellation-canvas" aria-hidden="true"></canvas>
+                <script>
+                (function () {
+                    const canvas = document.querySelector(".constellation-canvas");
+                    if (!canvas) return;
+
+                    const section = canvas.closest(".hero-section");
+                    if (!section) return;
+
+                    const ctx = canvas.getContext("2d", {
+                        alpha: true
+                    });
+
+                    const reducedMotion = window.matchMedia(
+                        "(prefers-reduced-motion: reduce)"
+                    ).matches;
+
+                    /* ---------------------------------------------------------
+                    CONFIGURATION
+                    --------------------------------------------------------- */
+
+                    const CONFIG = {
+                        particleDensity: 8500,
+
+                        minParticles: 45,
+                        maxParticles: 140,
+
+                        particleMinRadius: 1.4,
+                        particleMaxRadius: 2.6,
+
+                        particleSpeed: 0.12,
+
+                        linkDistance: 0.36,
+                        maxLinksPerParticle: 3,
+
+                        linkOpacity: 0.28,
+                        particleOpacity: 0.75,
+
+                        linkFadeSpeed: 0.035,
+
+                        linkUpdateInterval: 45,
+                        linkChangesPerCycle: 3,
+
+                        driftStrength: 0.012
+                    };
+
+                    /* ---------------------------------------------------------
+                    STATE
+                    --------------------------------------------------------- */
+
+                    let particles = [];
+                    let links = new Map();
+
+                    let width = 0;
+                    let height = 0;
+                    let dpr = 1;
+
+                    let frame = 0;
+                    let animationFrame = null;
+
+                    /* ---------------------------------------------------------
+                    COLORS
+                    --------------------------------------------------------- */
+
+                    function getInkColor() {
+                        return (
+                            getComputedStyle(document.documentElement)
+                                .getPropertyValue("--ink")
+                                .trim() || "#171B21"
+                        );
+                    }
+
+                    /* ---------------------------------------------------------
+                    PARTICLES
+                    --------------------------------------------------------- */
+
+                    function particleCount() {
+                        const calculated = Math.round(
+                            (width * height) / CONFIG.particleDensity
+                        );
+
+                        return Math.min(
+                            CONFIG.maxParticles,
+                            Math.max(CONFIG.minParticles, calculated)
+                        );
+                    }
+
+                    function createParticle() {
+                        const angle = Math.random() * Math.PI * 2;
+
+                        const speed =
+                            CONFIG.particleSpeed *
+                            (0.55 + Math.random() * 0.45);
+
+                        return {
+                            x: Math.random() * width,
+                            y: Math.random() * height,
+
+                            vx: Math.cos(angle) * speed,
+                            vy: Math.sin(angle) * speed,
+
+                            r:
+                                CONFIG.particleMinRadius +
+                                Math.random() *
+                                (CONFIG.particleMaxRadius -
+                                    CONFIG.particleMinRadius),
+
+                            opacity:
+                                0.25 +
+                                Math.random() * CONFIG.particleOpacity,
+
+                            phase: Math.random() * Math.PI * 2,
+
+                            drift:
+                                CONFIG.driftStrength *
+                                (0.5 + Math.random() * 0.5)
+                        };
+                    }
+
+                    function seedParticles() {
+                        const count = particleCount();
+
+                        particles = Array.from(
+                            { length: count },
+                            createParticle
+                        );
+
+                        links.clear();
+
+                        createInitialLinks();
+                    }
+
+                    /* ---------------------------------------------------------
+                    LINKS
+                    --------------------------------------------------------- */
+
+                    function getMaxLinkDistance() {
+                        return Math.min(width, height) * CONFIG.linkDistance;
+                    }
+
+                    function linkKey(i, j) {
+                        return i < j
+                            ? `${i}-${j}`
+                            : `${j}-${i}`;
+                    }
+
+                    function distanceBetween(a, b) {
+                        const dx = a.x - b.x;
+                        const dy = a.y - b.y;
+
+                        return Math.sqrt(dx * dx + dy * dy);
+                    }
+
+                    function createInitialLinks() {
+                        const maxDistance = getMaxLinkDistance();
+
+                        for (let i = 0; i < particles.length; i++) {
+                            let connections = 0;
+
+                            const nearby = [];
+
+                            for (let j = 0; j < particles.length; j++) {
+                                if (i === j) continue;
+
+                                const distance = distanceBetween(
+                                    particles[i],
+                                    particles[j]
+                                );
+
+                                if (distance <= maxDistance) {
+                                    nearby.push({
+                                        index: j,
+                                        distance
+                                    });
+                                }
+                            }
+
+                            /* Prefer nearby particles */
+                            nearby.sort(
+                                (a, b) =>
+                                    a.distance - b.distance
+                            );
+
+                            for (const candidate of nearby) {
+                                if (
+                                    connections >=
+                                    CONFIG.maxLinksPerParticle
+                                ) {
+                                    break;
+                                }
+
+                                /* Slight randomness prevents a rigid web */
+                                if (Math.random() > 0.65) {
+                                    continue;
+                                }
+
+                                const key = linkKey(
+                                    i,
+                                    candidate.index
+                                );
+
+                                if (!links.has(key)) {
+                                    links.set(key, {
+                                        alpha: 0,
+                                        target: 1
+                                    });
+
+                                    connections++;
+                                }
+                            }
+                        }
+                    }
+
+                    /* ---------------------------------------------------------
+                    DYNAMIC LINK CHANGES
+                    --------------------------------------------------------- */
+
+                    function updateLinks() {
+                        const maxDistance = getMaxLinkDistance();
+
+                        for (
+                            let n = 0;
+                            n < CONFIG.linkChangesPerCycle;
+                            n++
+                        ) {
+                            const i = Math.floor(
+                                Math.random() * particles.length
+                            );
+
+                            const j = Math.floor(
+                                Math.random() * particles.length
+                            );
+
+                            if (i === j) continue;
+
+                            const a = particles[i];
+                            const b = particles[j];
+
+                            const distance =
+                                distanceBetween(a, b);
+
+                            if (distance > maxDistance) {
+                                continue;
+                            }
+
+                            const key = linkKey(i, j);
+                            const existing = links.get(key);
+
+                            if (existing) {
+                                /* Occasionally remove an existing connection */
+                                if (Math.random() < 0.35) {
+                                    existing.target = 0;
+                                }
+                            } else {
+                                /* Create a new connection */
+                                links.set(key, {
+                                    alpha: 0,
+                                    target: 1
+                                });
+                            }
+                        }
+
+                        /* Naturally fade a few connections */
+                        links.forEach((link) => {
+                            if (
+                                link.target === 1 &&
+                                Math.random() < 0.008
+                            ) {
+                                link.target = 0;
+                            }
+                        });
+                    }
+
+                    /* ---------------------------------------------------------
+                    PARTICLE MOTION
+                    --------------------------------------------------------- */
+
+                    function updateParticles() {
+                        const time = frame * 0.01;
+
+                        for (const particle of particles) {
+
+                            /*
+                            * Very subtle sinusoidal drift makes the
+                            * constellation feel alive without looking chaotic.
+                            */
+
+                            const driftX =
+                                Math.sin(
+                                    time + particle.phase
+                                ) * particle.drift;
+
+                            const driftY =
+                                Math.cos(
+                                    time * 0.8 +
+                                    particle.phase
+                                ) * particle.drift;
+
+                            particle.x +=
+                                particle.vx + driftX;
+
+                            particle.y +=
+                                particle.vy + driftY;
+
+                            /* Soft wrap instead of hard bouncing */
+
+                            if (particle.x < -10) {
+                                particle.x = width + 10;
+                            }
+
+                            if (particle.x > width + 10) {
+                                particle.x = -10;
+                            }
+
+                            if (particle.y < -10) {
+                                particle.y = height + 10;
+                            }
+
+                            if (particle.y > height + 10) {
+                                particle.y = -10;
+                            }
+                        }
+                    }
+
+                    /* ---------------------------------------------------------
+                    DRAW LINKS
+                    --------------------------------------------------------- */
+
+                    function drawLinks(color) {
+                        ctx.lineWidth = 1.2;
+                        ctx.strokeStyle = color;
+
+                        links.forEach((link, key) => {
+
+                            /*
+                            * Smooth interpolation toward target opacity
+                            */
+                            link.alpha +=
+                                (link.target - link.alpha) *
+                                CONFIG.linkFadeSpeed;
+
+                            if (
+                                link.target === 0 &&
+                                link.alpha < 0.015
+                            ) {
+                                links.delete(key);
+                                return;
+                            }
+
+                            const [i, j] = key
+                                .split("-")
+                                .map(Number);
+
+                            const a = particles[i];
+                            const b = particles[j];
+
+                            if (!a || !b) {
+                                links.delete(key);
+                                return;
+                            }
+
+                            /*
+                            * Slightly stronger links when particles
+                            * are closer together.
+                            */
+
+                            const distance =
+                                distanceBetween(a, b);
+
+                            const maxDistance =
+                                getMaxLinkDistance();
+
+                            const distanceFactor =
+                                1 -
+                                Math.min(
+                                    distance / maxDistance,
+                                    1
+                                );
+
+                            ctx.globalAlpha =
+                                link.alpha *
+                                CONFIG.linkOpacity *
+                                (0.35 + distanceFactor);
+
+                            ctx.beginPath();
+
+                            ctx.moveTo(a.x, a.y);
+                            ctx.lineTo(b.x, b.y);
+
+                            ctx.stroke();
+                        });
+                    }
+
+                    /* ---------------------------------------------------------
+                    DRAW PARTICLES
+                    --------------------------------------------------------- */
+
+                    function drawParticles(color) {
+                        ctx.fillStyle = color;
+
+                        for (const particle of particles) {
+
+                            ctx.globalAlpha =
+                                particle.opacity;
+
+                            ctx.beginPath();
+
+                            ctx.arc(
+                                particle.x,
+                                particle.y,
+                                particle.r,
+                                0,
+                                Math.PI * 2
+                            );
+
+                            ctx.fill();
+                        }
+                    }
+
+                    /* ---------------------------------------------------------
+                    RESIZE
+                    --------------------------------------------------------- */
+
+                    function resize() {
+                        const rect =
+                            section.getBoundingClientRect();
+
+                        const newWidth =
+                            Math.round(rect.width);
+
+                        const newHeight =
+                            Math.round(rect.height);
+
+                        if (
+                            newWidth <= 0 ||
+                            newHeight <= 0
+                        ) {
+                            return;
+                        }
+
+                        const previousWidth = width;
+                        const previousHeight = height;
+
+                        width = newWidth;
+                        height = newHeight;
+
+                        dpr = Math.min(
+                            window.devicePixelRatio || 1,
+                            2
+                        );
+
+                        canvas.width =
+                            width * dpr;
+
+                        canvas.height =
+                            height * dpr;
+
+                        canvas.style.width =
+                            `${width}px`;
+
+                        canvas.style.height =
+                            `${height}px`;
+
+                        ctx.setTransform(
+                            dpr,
+                            0,
+                            0,
+                            dpr,
+                            0,
+                            0
+                        );
+
+                        /*
+                        * Only recreate particles if the canvas
+                        * meaningfully changes size.
+                        */
+
+                        if (
+                            particles.length === 0 ||
+                            previousWidth === 0 ||
+                            Math.abs(width - previousWidth) > 150 ||
+                            Math.abs(height - previousHeight) > 150
+                        ) {
+                            seedParticles();
+                        }
+                    }
+
+                    /* ---------------------------------------------------------
+                    RENDER
+                    --------------------------------------------------------- */
+
+                    function render() {
+                        if (
+                            width === 0 ||
+                            height === 0
+                        ) {
+                            animationFrame =
+                                requestAnimationFrame(render);
+
+                            return;
+                        }
+
+                        ctx.clearRect(
+                            0,
+                            0,
+                            width,
+                            height
+                        );
+
+                        const color =
+                            getInkColor();
+
+                        if (!reducedMotion) {
+                            updateParticles();
+
+                            if (
+                                frame %
+                                CONFIG.linkUpdateInterval ===
+                                0
+                            ) {
+                                updateLinks();
+                            }
+                        }
+
+                        drawLinks(color);
+
+                        ctx.globalAlpha = 1;
+
+                        drawParticles(color);
+
+                        ctx.globalAlpha = 1;
+
+                        frame++;
+
+                        if (!reducedMotion) {
+                            animationFrame =
+                                requestAnimationFrame(render);
+                        }
+                    }
+
+                    /* ---------------------------------------------------------
+                    INITIALIZATION
+                    --------------------------------------------------------- */
+
+                    const resizeObserver =
+                        new ResizeObserver(resize);
+
+                    resizeObserver.observe(section);
+
+                    if (
+                        document.fonts &&
+                        document.fonts.ready
+                    ) {
+                        document.fonts.ready.then(resize);
+                    }
+
+                    window.addEventListener(
+                        "load",
+                        resize,
+                        { once: true }
+                    );
+
+                    resize();
+
+                    if (reducedMotion) {
+                        updateLinks();
+                        render();
+                    } else {
+                        animationFrame =
+                            requestAnimationFrame(render);
+                    }
+
+                    /* ---------------------------------------------------------
+                    CLEANUP
+                    --------------------------------------------------------- */
+
+                    window.addEventListener(
+                        "beforeunload",
+                        () => {
+                            resizeObserver.disconnect();
+
+                            if (animationFrame) {
+                                cancelAnimationFrame(
+                                    animationFrame
+                                );
+                            }
+                        },
+                        { once: true }
+                    );
+                })();
+                </script>
                 <div class="hero-content">
                     <div class="hero-pretitle">Innovation & Emerging Tech</div>
                     <h1 id="hero-title" class="hero-title">
