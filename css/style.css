@@ -1911,3 +1911,11 @@ a:hover {
 .poc-card.status-blocked .poc-status-line {
     background: #ef4444;
 }
+
+:root .poc-status-line {
+    display: none;
+} 
+
+[data-theme="dark"] .poc-status-line {
+    display: block;
+}

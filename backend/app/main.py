@@ -1,7 +1,6 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-
 from fastapi.middleware.cors import CORSMiddleware
 
 from .deliverables.router import (
@@ -10,17 +9,8 @@ from .deliverables.router import (
 )
 
 from .cache.redis import redis_client
-
 from .cache.router import (
     router as cache_router,
-)
-
-from .chatbot.router import (
-    router as chatbot_router,
-)
-
-from .chatbot.vector_store import (
-    vector_store,
 )
 
 
@@ -48,7 +38,6 @@ async def lifespan(
     # -----------------------------------------------------
 
     try:
-
         await get_deliverables()
 
         print(
@@ -56,25 +45,9 @@ async def lifespan(
         )
 
     except Exception as exc:
-
         print(
             "WARNING: Could not initialize "
             f"deliverables cache: {exc}"
-        )
-
-    # -----------------------------------------------------
-    # BUILD VECTOR INDEX
-    # -----------------------------------------------------
-
-    try:
-
-        await vector_store.initialize()
-
-    except Exception as exc:
-
-        print(
-            "WARNING: Could not initialize "
-            f"vector store: {exc}"
         )
 
     yield
@@ -107,13 +80,9 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-
     allow_origins=["*"],
-
     allow_credentials=True,
-
     allow_methods=["*"],
-
     allow_headers=["*"],
 )
 
@@ -128,10 +97,6 @@ app.include_router(
 
 app.include_router(
     cache_router
-)
-
-app.include_router(
-    chatbot_router
 )
 
 
@@ -158,23 +123,11 @@ async def health():
     redis_status = "connected"
 
     try:
-
         await redis_client.ping()
-
     except Exception:
-
         redis_status = "disconnected"
 
     return {
-
         "status": "healthy",
-
         "redis": redis_status,
-
-        "vector_store": (
-            "ready"
-            if vector_store.ready
-            else "not ready"
-        ),
-
     }
