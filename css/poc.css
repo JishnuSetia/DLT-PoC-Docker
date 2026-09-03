@@ -37,7 +37,41 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: var(--rta-gradient);
+    background: var(--status-gradient, var(--rta-gradient));
+}
+
+/* ---------------------------------------------------------
+   STATUS-AWARE ACCENT COLORS
+--------------------------------------------------------- */
+
+.poc-details-container.not-started {
+    --status-color: #64748B;
+    --status-gradient: linear-gradient(90deg, #475569, #94A3B8);
+}
+
+.poc-details-container.planning {
+    --status-color: #F59E0B;
+    --status-gradient: linear-gradient(90deg, #D97706, #FBBF24);
+}
+
+.poc-details-container.in-progress {
+    --status-color: #3B82F6;
+    --status-gradient: linear-gradient(90deg, #2563EB, #60A5FA);
+}
+
+.poc-details-container.review {
+    --status-color: #8B5CF6;
+    --status-gradient: linear-gradient(90deg, #7C3AED, #A78BFA);
+}
+
+.poc-details-container.completed {
+    --status-color: #10B981;
+    --status-gradient: linear-gradient(90deg, #059669, #34D399);
+}
+
+.poc-details-container.on-hold {
+    --status-color: #EF4444;
+    --status-gradient: linear-gradient(90deg, #DC2626, #F87171);
 }
 
 .poc-left-column,
@@ -55,7 +89,7 @@
     position: relative;
     width: 100%;
     height: min(60vh, 520px);
-    background: #000000;
+    background: transparent;
     border: 1px solid var(--border-hairline);
     border-radius: var(--radius-md);
     overflow: hidden;
@@ -85,59 +119,368 @@
 
 /* Live Video Indicator Dot */
 .poc-video-wrapper::after {
-    content: "";
-    position: absolute;
-    top: 14px;
-    left: 14px;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--rta-red);
-    box-shadow: 0 0 8px rgba(236, 28, 36, 0.8);
-    pointer-events: none;
-    z-index: 2;
-    animation: rtaPulse 2s infinite ease-in-out;
+    background: var(--status-color, var(--rta-red));
+
+    box-shadow: 0 0 8px color-mix(
+        in srgb,
+        var(--status-color, var(--rta-red)) 70%,
+        transparent
+    );
 }
 
-/* Video Placeholder */
+/* ---------------------------------------------------------
+   WORK IN PROGRESS VIDEO PLACEHOLDER
+--------------------------------------------------------- */
 .poc-video-placeholder {
     width: 100%;
-    height: 100%;
-    min-height: 300px;
-    background: var(--surface-card-subtle);
+    min-height: 420px;
+    padding: 36px 32px 40px;
+
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 32px;
+
     text-align: center;
-    gap: 12px;
+
+    background: var(--surface-card-subtle);
+    color: var(--text-primary);
+
+    overflow: hidden;
 }
 
-.poc-video-placeholder-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: var(--rta-red-tint);
-    border: 1px solid var(--rta-red-border);
-    color: var(--rta-red);
+/* =========================================
+   RTA TRUCK LOADER
+   ========================================= */
+
+.rta-loader {
+    --loader-accent: var(--status-color, var(--rta-red));
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
-    padding-left: 3px;
+    margin-bottom: 18px;
 }
+
+.truckWrapper {
+    width: min(360px, 90%);
+    height: 150px;
+
+    display: flex;
+    flex-direction: column;
+
+    position: relative;
+
+    align-items: center;
+    justify-content: flex-end;
+
+    overflow: hidden;
+}
+
+/* Truck */
+
+.truckBody {
+    width: 230px;
+    height: fit-content;
+
+    margin-bottom: 8px;
+
+    animation: rtaTruckMotion 0.9s linear infinite;
+
+    z-index: 2;
+}
+
+.trucksvg {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Wheels */
+
+.truckTires {
+    width: 230px;
+    height: fit-content;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 15px 0 24px;
+
+    position: absolute;
+    bottom: 1px;
+
+    z-index: 3;
+}
+
+.truckTires svg {
+    width: 42px;
+    height: 42px;
+
+    animation: rtaWheelSpin 0.9s linear infinite;
+}
+
+/* Road */
+
+.road {
+    width: 100%;
+    height: 3px;
+
+    background: var(--loader-road);
+
+    position: relative;
+
+    align-self: flex-end;
+
+    border-radius: 999px;
+
+    z-index: 1;
+}
+
+.road::before {
+    content: "";
+
+    position: absolute;
+
+    width: 34px;
+    height: 3px;
+
+    background: var(--surface-card-subtle);
+
+    right: -70px;
+
+    border-radius: 999px;
+
+    animation: rtaRoadAnimation 1.15s linear infinite;
+}
+
+.road::after {
+    content: "";
+
+    position: absolute;
+
+    width: 18px;
+    height: 3px;
+
+    background: var(--surface-card-subtle);
+
+    right: -125px;
+
+    border-radius: 999px;
+
+    animation: rtaRoadAnimation 1.15s linear infinite;
+
+    animation-delay: -0.35s;
+}
+
+/* =========================================
+   STATUS
+   ========================================= */
+
+.poc-wip-status {
+    display: inline-flex;
+
+    align-items: center;
+    gap: 8px;
+
+    margin-bottom: 8px;
+
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+
+    letter-spacing: 0.12em;
+
+    color: var(--status-color, var(--rta-red));
+}
+
+.poc-wip-dot {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: var(--status-color, var(--rta-red));
+
+    box-shadow:
+        0 0 0 4px
+        color-mix(
+            in srgb,
+            var(--status-color, var(--rta-red)) 12%,
+            transparent
+        );
+
+    animation: rtaPulse 2s infinite ease-in-out;
+}
+
+/* Text */
 
 .poc-video-placeholder-title {
     font-size: 16px;
     font-weight: 600;
+
     color: var(--text-primary);
+
+    margin-bottom: 2px;
 }
 
 .poc-video-placeholder-text {
     font-size: 13px;
+    line-height: 1.6;
+
     color: var(--text-muted);
-    max-width: 320px;
+
+    max-width: 380px;
+}
+
+/* =========================================
+   ANIMATIONS
+   ========================================= */
+
+@keyframes rtaTruckMotion {
+    0% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(3px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+@keyframes rtaWheelSpin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes rtaRoadAnimation {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-400px);
+    }
+}
+
+/* =========================================
+   LIGHT / DARK THEME VARIABLES
+   ========================================= */
+
+.poc-details-container {
+    --loader-stroke: #282828;
+    --loader-truck-body: #f1f3f5;
+    --loader-window: #7d7c7c;
+    --loader-wheel: #282828;
+    --loader-wheel-inner: #dfdfdf;
+    --loader-bumper: #282828;
+    --loader-road: #282828;
+}
+
+[data-theme="dark"] .poc-details-container {
+    --loader-stroke: #d8dee7;
+    --loader-truck-body: #252a32;
+    --loader-window: #59616d;
+    --loader-wheel: #15191f;
+    --loader-wheel-inner: #626b78;
+    --loader-bumper: #15191f;
+    --loader-road: #77808c;
+}
+
+/* =========================================
+   ACCESSIBILITY
+   ========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .truckBody,
+    .truckTires svg,
+    .road::before,
+    .road::after,
+    .poc-wip-dot {
+        animation: none !important;
+    }
+}
+/* ---------------------------------------------------------
+   ANIMATIONS
+--------------------------------------------------------- */
+
+@keyframes pocWipSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes pocWipFloat {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .poc-video-placeholder-icon,
+    .poc-wip-spinner,
+    .poc-video-placeholder-label::before {
+        animation: none;
+    }
+}
+
+@keyframes wipTruckDrive {
+    0%,
+    100% {
+        transform: translateX(-18px);
+    }
+
+    50% {
+        transform: translateX(18px);
+    }
+}
+
+@keyframes wipRouteMove {
+    to {
+        stroke-dashoffset: -32;
+    }
+}
+
+@keyframes wipSignalPulse {
+    0% {
+        transform: scale(0.75);
+        opacity: 0;
+        transform-origin: 500px 78px;
+    }
+
+    30% {
+        opacity: 0.45;
+    }
+
+    100% {
+        transform: scale(1.15);
+        opacity: 0;
+        transform-origin: 500px 78px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wip-truck,
+    .wip-route,
+    .wip-signal circle,
+    .poc-wip-dot {
+        animation: none !important;
+    }
 }
 
 /* ---------------------------------------------------------
