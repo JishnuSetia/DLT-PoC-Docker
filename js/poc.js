@@ -330,7 +330,7 @@ function renderPoC(poc) {
     ----------------------------------------------------- */
 
     container.innerHTML = `
-        <div class="poc-details-container">
+        <div class="poc-details-container ${statusClassFor(status)}">
 
             <!-- ==========================================
                  LEFT COLUMN
@@ -434,20 +434,211 @@ function renderPoC(poc) {
 ========================================================= */
 
 function renderVideoPlaceholder() {
-
     return `
         <div class="poc-video-placeholder">
 
-            <div class="poc-video-placeholder-icon">
-                ▶
+            <div class="rta-loader" aria-hidden="true">
+                <div class="truckWrapper">
+
+                    <div class="truckBody">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 198 93"
+                            class="trucksvg"
+                        >
+                            <!-- Cargo body -->
+                            <rect
+                                stroke-width="3"
+                                stroke="var(--loader-stroke)"
+                                fill="var(--loader-truck-body)"
+                                rx="2.5"
+                                height="90"
+                                width="121"
+                                y="1.5"
+                                x="6.5"
+                            />
+
+                            <!-- Cargo accent -->
+                            <rect
+                                x="17"
+                                y="14"
+                                width="82"
+                                height="6"
+                                rx="3"
+                                fill="var(--status-color, var(--rta-red))"
+                                opacity="0.9"
+                            />
+
+                            <!-- RTA-style side detail -->
+                            <rect
+                                x="17"
+                                y="28"
+                                width="55"
+                                height="4"
+                                rx="2"
+                                fill="var(--loader-stroke)"
+                                opacity="0.2"
+                            />
+
+                            <rect
+                                x="17"
+                                y="38"
+                                width="38"
+                                height="4"
+                                rx="2"
+                                fill="var(--loader-stroke)"
+                                opacity="0.12"
+                            />
+
+                            <!-- Cab -->
+                            <path
+                                stroke-width="3"
+                                stroke="var(--loader-stroke)"
+                                fill="var(--status-color, var(--rta-red))"
+                                d="
+                                    M135 22.5H177.264
+                                    C178.295 22.5 179.22 23.133 179.594 24.0939
+                                    L192.33 56.8443
+                                    C192.442 57.1332 192.5 57.4404 192.5 57.7504
+                                    V89
+                                    C192.5 90.3807 191.381 91.5 190 91.5
+                                    H135
+                                    C133.619 91.5 132.5 90.3807 132.5 89
+                                    V25
+                                    C132.5 23.6193 133.619 22.5 135 22.5Z
+                                "
+                            />
+
+                            <!-- Windshield -->
+                            <path
+                                stroke-width="3"
+                                stroke="var(--loader-stroke)"
+                                fill="var(--loader-window)"
+                                d="
+                                    M146 33.5H181.741
+                                    C182.779 33.5 183.709 34.1415 184.078 35.112
+                                    L190.538 52.112
+                                    C191.16 53.748 189.951 55.5 188.201 55.5
+                                    H146
+                                    C144.619 55.5 143.5 54.3807 143.5 53
+                                    V36
+                                    C143.5 34.6193 144.619 33.5 146 33.5Z
+                                "
+                            />
+
+                            <!-- Door -->
+                            <path
+                                d="M136 58H185"
+                                stroke="var(--loader-stroke)"
+                                stroke-width="2"
+                                opacity="0.3"
+                            />
+
+                            <!-- Headlight -->
+                            <rect
+                                stroke-width="2"
+                                stroke="var(--loader-stroke)"
+                                fill="#FFFCAB"
+                                rx="1"
+                                height="7"
+                                width="5"
+                                y="63"
+                                x="187"
+                            />
+
+                            <!-- Front bumper -->
+                            <rect
+                                stroke-width="2"
+                                stroke="var(--loader-stroke)"
+                                fill="var(--loader-stroke)"
+                                rx="1"
+                                height="11"
+                                width="4"
+                                y="81"
+                                x="193"
+                            />
+
+                            <!-- Rear bumper -->
+                            <rect
+                                stroke-width="2"
+                                stroke="var(--loader-stroke)"
+                                fill="var(--loader-bumper)"
+                                rx="2"
+                                height="4"
+                                width="6"
+                                y="84"
+                                x="1"
+                            />
+                        </svg>
+                    </div>
+
+                    <!-- Wheels -->
+                    <div class="truckTires">
+
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 30 30"
+                            class="tiresvg"
+                        >
+                            <circle
+                                stroke-width="3"
+                                stroke="var(--loader-stroke)"
+                                fill="var(--loader-wheel)"
+                                r="13.5"
+                                cy="15"
+                                cx="15"
+                            />
+                            <circle
+                                fill="var(--loader-wheel-inner)"
+                                r="7"
+                                cy="15"
+                                cx="15"
+                            />
+                        </svg>
+
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 30 30"
+                            class="tiresvg"
+                        >
+                            <circle
+                                stroke-width="3"
+                                stroke="var(--loader-stroke)"
+                                fill="var(--loader-wheel)"
+                                r="13.5"
+                                cy="15"
+                                cx="15"
+                            />
+                            <circle
+                                fill="var(--loader-wheel-inner)"
+                                r="7"
+                                cy="15"
+                                cx="15"
+                            />
+                        </svg>
+
+                    </div>
+
+                    <!-- Road -->
+                    <div class="road"></div>
+
+                </div>
+            </div>
+
+            <div class="poc-wip-status">
+                <span class="poc-wip-dot"></span>
+                WORK IN PROGRESS
             </div>
 
             <div class="poc-video-placeholder-title">
-                PoC Video
+                Demo Coming Soon
             </div>
 
             <div class="poc-video-placeholder-text">
-                Video demonstration coming soon.
+                This PoC is currently being developed.
+                A demonstration video will be available once
+                the project is ready.
             </div>
 
         </div>
