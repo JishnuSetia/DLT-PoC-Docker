@@ -1257,3 +1257,31 @@ themeToggle?.addEventListener("click", () => {
     const currentTheme = document.documentElement.getAttribute("data-theme") || "dark";
     setTheme(currentTheme === "dark" ? "light" : "dark");
 });
+
+const logoutBtn = document.getElementById("logoutBtn");
+
+if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+        logoutBtn.disabled = true;
+        logoutBtn.textContent = "Logging out...";
+
+        try {
+            const response = await fetch("/api/auth/logout", {
+                method: "POST",
+                credentials: "include"
+            });
+
+            if (response.ok) {
+                window.location.replace("login.html");
+            } else {
+                console.error("Logout failed:", await response.text());
+                logoutBtn.disabled = false;
+                logoutBtn.textContent = "Logout";
+            }
+        } catch (error) {
+            console.error("Logout request failed:", error);
+            logoutBtn.disabled = false;
+            logoutBtn.textContent = "Logout";
+        }
+    });
+}

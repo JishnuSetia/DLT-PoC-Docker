@@ -576,15 +576,83 @@ a:hover {
     margin-bottom: 36px;
 }
 
-.constellation-canvas {
-    position: absolute;
-    inset: -20% -5%;
-    width: 110%;
-    height: 140%;
-    z-index: 0;
-    pointer-events: none;
-    opacity: 0.5;
+/* =========================================
+   FULL-PAGE CONSTELLATION BACKGROUND
+   ========================================= */
+
+#app {
+    position: relative;
+    isolation: isolate;
+    min-height: 100vh;
 }
+
+.constellation-canvas {
+    position: fixed;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    pointer-events: none;
+
+    z-index: -2;
+
+    opacity: 0.6;
+}
+
+/*
+   Soft overlay keeps the animation subtle
+   and prevents it from competing with content.
+*/
+
+#app::before {
+    content: "";
+
+    position: fixed;
+    inset: 0;
+
+    pointer-events: none;
+
+    z-index: -1;
+
+    background:
+        radial-gradient(
+            ellipse at 50% 0%,
+            transparent 0%,
+            var(--surface-page) 78%
+        );
+
+    opacity: 0.88;
+}
+
+/* Make content sit above the background */
+
+.header,
+.main-content,
+.app-footer {
+    position: relative;
+    z-index: 1;
+}
+
+/* The hero no longer owns the canvas */
+
+.hero-section {
+    position: relative;
+    z-index: 1;
+}
+
+/* Reduced-motion users get a completely static page */
+
+@media (prefers-reduced-motion: reduce) {
+    .constellation-canvas {
+        display: none;
+    }
+
+    #app::before {
+        display: none;
+    }
+}
+
 
 [data-theme="dark"] .constellation-canvas {
     opacity: 0.5;
@@ -2479,4 +2547,58 @@ a:hover {
         right: 16px;
         bottom: 16px;
     }
+}
+/* ---------------------------------------------------------
+   LOGOUT BUTTON
+--------------------------------------------------------- */
+
+.logout-btn {
+    height: 36px;
+    padding: 0 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-hairline);
+    background: var(--surface-card);
+    color: var(--text-secondary);
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    cursor: pointer;
+
+    transition:
+        background var(--trans-fast),
+        border-color var(--trans-fast),
+        color var(--trans-fast),
+        transform var(--trans-fast);
+}
+
+.logout-btn:hover {
+    background: var(--rta-red-tint);
+    border-color: var(--rta-red-border);
+    color: var(--rta-red-deep);
+    transform: translateY(-1px);
+}
+
+.logout-btn:focus-visible {
+    outline: none;
+    border-color: rgba(236, 28, 36, 0.5);
+    box-shadow:
+        0 0 0 3px rgba(236, 28, 36, 0.08);
+}
+
+.logout-btn:active {
+    transform: translateY(0);
+}
+
+.logout-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
 }

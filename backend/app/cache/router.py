@@ -1,6 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import (
+    APIRouter,
+    HTTPException,
+    Depends,
+)
 
 from .redis import redis_client
+from ..auth.dependencies import require_auth
 
 
 router = APIRouter(
@@ -14,7 +19,9 @@ router = APIRouter(
 # =========================================================
 
 @router.get("/status")
-async def cache_status():
+async def cache_status(
+    _user=Depends(require_auth),
+):
 
     try:
         await redis_client.ping()
@@ -41,7 +48,9 @@ async def cache_status():
 # =========================================================
 
 @router.delete("/deliverables")
-async def clear_deliverables_cache():
+async def clear_deliverables_cache(
+    _user=Depends(require_auth),
+):
 
     try:
 
@@ -73,7 +82,10 @@ async def clear_deliverables_cache():
 # =========================================================
 
 @router.delete("/deliverables/{id}")
-async def clear_deliverable_cache(id: int):
+async def clear_deliverable_cache(
+    id: int,
+    _user=Depends(require_auth),
+):
 
     try:
 

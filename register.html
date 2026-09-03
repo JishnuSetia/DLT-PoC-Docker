@@ -1,0 +1,2391 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<meta
+    name="description"
+    content="Create an account for the RTA PoC Gallery."
+>
+
+<title>Register | RTA PoC Gallery</title>
+
+
+<!-- =====================================================
+     FONTS
+====================================================== -->
+
+<link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+>
+
+<link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+>
+
+<link
+    href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet"
+>
+
+
+<!-- =====================================================
+     STYLES
+====================================================== -->
+
+<link
+    rel="stylesheet"
+    href="css/style.css"
+>
+
+<link
+    rel="icon"
+    href="assets/favicon.png"
+>
+
+
+<!-- =====================================================
+     THEME INITIALIZATION
+     Runs before page renders to prevent theme flash.
+====================================================== -->
+
+<script>
+
+    (function () {
+
+        const savedTheme =
+            localStorage.getItem("theme");
+
+
+        const prefersDark =
+            window.matchMedia(
+                "(prefers-color-scheme: dark)"
+            ).matches;
+
+
+        const theme =
+            savedTheme === "dark" ||
+            savedTheme === "light"
+
+                ? savedTheme
+
+                : prefersDark
+                    ? "dark"
+                    : "light";
+
+
+        document.documentElement.setAttribute(
+            "data-theme",
+            theme
+        );
+
+    })();
+
+</script>
+
+
+<!-- =====================================================
+     AUTH PAGE STYLES
+====================================================== -->
+
+<style>
+
+    /* =====================================================
+       AUTH PAGE
+    ====================================================== */
+
+    .auth-page {
+
+        min-height: 100vh;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        padding: 48px 20px;
+
+        position: relative;
+
+        z-index: 1;
+
+    }
+
+
+    .auth-card {
+
+        width: min(480px, 100%);
+
+        padding: 40px;
+
+        border: 1px solid var(--border-hairline);
+
+        border-radius: var(--radius-lg);
+
+        background: var(--surface-card);
+
+        box-shadow: var(--shadow-card);
+
+    }
+
+
+    /* =====================================================
+       BRAND
+    ====================================================== */
+
+    .auth-brand {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        gap: 20px;
+
+        margin-bottom: 34px;
+
+    }
+
+
+    .auth-logo {
+
+        width: 108px;
+
+        height: auto;
+
+        object-fit: contain;
+
+    }
+
+
+    .auth-program {
+
+        font-family: "IBM Plex Mono", monospace;
+
+        font-size: 10px;
+
+        line-height: 1.5;
+
+        letter-spacing: 0.08em;
+
+        text-transform: uppercase;
+
+        color: var(--text-muted);
+
+        text-align: right;
+
+    }
+
+
+    /* =====================================================
+       HEADER
+    ====================================================== */
+
+    .auth-pretitle {
+
+        margin-bottom: 9px;
+
+        font-family: "IBM Plex Mono", monospace;
+
+        font-size: 10px;
+
+        font-weight: 500;
+
+        line-height: 1.4;
+
+        letter-spacing: 0.12em;
+
+        text-transform: uppercase;
+
+        color: var(--text-muted);
+
+    }
+
+
+    .auth-title {
+
+        margin: 0;
+
+        color: var(--text-primary);
+
+        font-size: 34px;
+
+        line-height: 1.1;
+
+        font-weight: 700;
+
+        letter-spacing: -0.02em;
+
+    }
+
+
+    .auth-description {
+
+        margin: 14px 0 30px;
+
+        color: var(--text-secondary);
+
+        font-size: 14px;
+
+        line-height: 1.6;
+
+    }
+
+
+    /* =====================================================
+       FORM
+    ====================================================== */
+
+    .auth-form {
+
+        display: flex;
+
+        flex-direction: column;
+
+    }
+
+
+    .auth-field {
+
+        margin-bottom: 18px;
+
+    }
+
+
+    .auth-field label {
+
+        display: block;
+
+        margin-bottom: 8px;
+
+        color: var(--text-primary);
+
+        font-size: 12px;
+
+        font-weight: 600;
+
+    }
+
+
+    .auth-field input {
+
+        width: 100%;
+
+        height: 42px;
+
+        box-sizing: border-box;
+
+        padding: 0 13px;
+
+        border: 1px solid var(--border-hairline);
+
+        border-radius: var(--radius-md);
+
+        background: var(--surface-card-subtle);
+
+        color: var(--text-primary);
+
+        font-family: inherit;
+
+        font-size: 13px;
+
+        line-height: 1;
+
+        outline: none;
+
+        transition:
+
+            border-color var(--trans-fast),
+
+            background var(--trans-fast),
+
+            box-shadow var(--trans-fast);
+
+    }
+
+
+    .auth-field input::placeholder {
+
+        color: var(--text-muted);
+
+    }
+
+
+    .auth-field input:hover {
+
+        border-color: var(--border-subtle);
+
+    }
+
+
+    .auth-field input:focus {
+
+        border-color: var(--rta-red-border);
+
+        background: var(--surface-card);
+
+        box-shadow:
+
+            0 0 0 3px rgba(236, 28, 36, 0.08);
+
+    }
+
+
+    /* =====================================================
+       FIELD HELP
+    ====================================================== */
+
+    .auth-help {
+
+        margin-top: 7px;
+
+        color: var(--text-muted);
+
+        font-family: "IBM Plex Mono", monospace;
+
+        font-size: 9px;
+
+        line-height: 1.5;
+
+        letter-spacing: 0.02em;
+
+    }
+
+
+    /* =====================================================
+       SUBMIT BUTTON
+    ====================================================== */
+
+    .auth-submit {
+
+        width: 100%;
+
+        height: 42px;
+
+        margin-top: 4px;
+
+        padding: 0 18px;
+
+        border: 1px solid var(--rta-red);
+
+        border-radius: var(--radius-md);
+
+        background: var(--rta-red);
+
+        color: #ffffff;
+
+        font-family: inherit;
+
+        font-size: 13px;
+
+        font-weight: 700;
+
+        line-height: 1;
+
+        cursor: pointer;
+
+        transition:
+
+            background var(--trans-fast),
+
+            border-color var(--trans-fast),
+
+            transform var(--trans-fast),
+
+            box-shadow var(--trans-fast);
+
+    }
+
+
+    .auth-submit:hover {
+
+        background: var(--rta-red-deep);
+
+        border-color: var(--rta-red-deep);
+
+        transform: translateY(-1px);
+
+        box-shadow:
+
+            0 4px 14px rgba(236, 28, 36, 0.16);
+
+    }
+
+
+    .auth-submit:focus-visible {
+
+        outline: none;
+
+        box-shadow:
+
+            0 0 0 3px rgba(236, 28, 36, 0.10),
+
+            0 4px 14px rgba(236, 28, 36, 0.12);
+
+    }
+
+
+    .auth-submit:active {
+
+        transform: translateY(0);
+
+    }
+
+
+    .auth-submit:disabled {
+
+        opacity: 0.55;
+
+        cursor: not-allowed;
+
+        transform: none;
+
+        box-shadow: none;
+
+    }
+
+
+    /* =====================================================
+       ERROR
+    ====================================================== */
+
+    .auth-error {
+
+        display: none;
+
+        margin-bottom: 18px;
+
+        padding: 11px 13px;
+
+        border: 1px solid rgba(239, 68, 68, 0.20);
+
+        border-left: 3px solid #ef4444;
+
+        border-radius: var(--radius-sm);
+
+        background: rgba(239, 68, 68, 0.06);
+
+        color: #b91c1c;
+
+        font-size: 12.5px;
+
+        line-height: 1.5;
+
+    }
+
+
+    .auth-error.visible {
+
+        display: block;
+
+    }
+
+
+    [data-theme="dark"] .auth-error {
+
+        color: #fca5a5;
+
+        background: rgba(239, 68, 68, 0.08);
+
+    }
+
+
+    /* =====================================================
+       FOOTER
+    ====================================================== */
+
+    .auth-footer {
+
+        margin-top: 24px;
+
+        padding-top: 20px;
+
+        border-top: 1px solid var(--border-hairline);
+
+        color: var(--text-muted);
+
+        text-align: center;
+
+        font-size: 12.5px;
+
+        line-height: 1.5;
+
+    }
+
+
+    .auth-footer a {
+
+        color: var(--rta-red);
+
+        font-weight: 600;
+
+        text-decoration: none;
+
+        transition:
+
+            color var(--trans-fast);
+
+    }
+
+
+    .auth-footer a:hover {
+
+        color: var(--rta-red-deep);
+
+        text-decoration: underline;
+
+    }
+
+
+    /* =====================================================
+       STATUS
+    ====================================================== */
+
+    .auth-status {
+
+        margin-top: 16px;
+
+        color: var(--text-muted);
+
+        text-align: center;
+
+        font-family: "IBM Plex Mono", monospace;
+
+        font-size: 9px;
+
+        font-weight: 500;
+
+        letter-spacing: 0.06em;
+
+        text-transform: uppercase;
+
+    }
+
+
+    /* =====================================================
+       THEME TOGGLE
+    ====================================================== */
+
+    .auth-theme-toggle {
+
+        position: fixed;
+
+        top: 22px;
+
+        right: 22px;
+
+        width: 36px;
+
+        height: 36px;
+
+        border: 1px solid var(--border-hairline);
+
+        border-radius: var(--radius-md);
+
+        background: var(--surface-card);
+
+        color: var(--text-primary);
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        font-family: inherit;
+
+        font-size: 14px;
+
+        cursor: pointer;
+
+        z-index: 1000;
+
+        transition:
+
+            background var(--trans-fast),
+
+            border-color var(--trans-fast),
+
+            color var(--trans-fast),
+
+            transform var(--trans-fast);
+
+    }
+
+
+    .auth-theme-toggle:hover {
+
+        background: var(--surface-card-subtle);
+
+        border-color: var(--border-subtle);
+
+        color: var(--rta-red);
+
+        transform: translateY(-1px);
+
+    }
+
+
+    .auth-theme-toggle:focus-visible {
+
+        outline: none;
+
+        border-color: var(--rta-red-border);
+
+        box-shadow:
+
+            0 0 0 3px rgba(236, 28, 36, 0.08);
+
+    }
+
+
+    .auth-theme-toggle:active {
+
+        transform: translateY(0);
+
+    }
+
+
+    /* =====================================================
+       MOBILE
+    ====================================================== */
+
+    @media (max-width: 520px) {
+
+        .auth-page {
+
+            padding: 32px 16px;
+
+        }
+
+
+        .auth-card {
+
+            padding: 30px 24px;
+
+            border-radius: var(--radius-lg);
+
+        }
+
+
+        .auth-title {
+
+            font-size: 29px;
+
+        }
+
+
+        .auth-program {
+
+            display: none;
+
+        }
+
+
+        .auth-brand {
+
+            margin-bottom: 30px;
+
+        }
+
+
+        .auth-logo {
+
+            width: 100px;
+
+        }
+
+
+        .auth-theme-toggle {
+
+            top: 16px;
+
+            right: 16px;
+
+        }
+
+    }
+
+</style>
+
+
+</head>
+
+<body>
+
+
+<!-- =====================================================
+     AUTH GUARD
+====================================================== -->
+
+<script>
+
+    (async function () {
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/auth/me",
+                    {
+                        credentials: "include"
+                    }
+                );
+
+
+            if (response.ok) {
+
+                window.location.replace(
+                    "index.html"
+                );
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Authentication check failed:",
+                error
+            );
+
+        }
+
+    })();
+
+</script>
+
+
+<!-- =====================================================
+     CONSTELLATION BACKGROUND
+====================================================== -->
+
+<canvas
+    class="constellation-canvas"
+    aria-hidden="true"
+    style="
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.32;
+    "
+></canvas>
+
+
+<script>
+
+    (function () {
+
+        const canvas =
+            document.querySelector(
+                ".constellation-canvas"
+            );
+
+
+        if (!canvas) {
+
+            return;
+
+        }
+
+
+        const ctx =
+            canvas.getContext(
+                "2d",
+                {
+                    alpha: true
+                }
+            );
+
+
+        if (!ctx) {
+
+            return;
+
+        }
+
+
+        const reducedMotion =
+            window.matchMedia(
+                "(prefers-reduced-motion: reduce)"
+            ).matches;
+
+
+        /* =================================================
+           CONFIGURATION
+        ================================================== */
+
+        const CONFIG = {
+
+            particleDensity: 11000,
+
+            minParticles: 45,
+
+            maxParticles: 140,
+
+            particleMinRadius: 1.4,
+
+            particleMaxRadius: 2.6,
+
+            particleSpeed: 0.12,
+
+            linkDistance: 0.36,
+
+            maxLinksPerParticle: 3,
+
+            linkOpacity: 0.28,
+
+            particleOpacity: 0.75,
+
+            linkFadeSpeed: 0.035,
+
+            linkUpdateInterval: 45,
+
+            linkChangesPerCycle: 3,
+
+            driftStrength: 0.012
+
+        };
+
+
+        /* =================================================
+           STATE
+        ================================================== */
+
+        let particles = [];
+
+        let links = new Map();
+
+        let width = 0;
+
+        let height = 0;
+
+        let dpr = 1;
+
+        let frame = 0;
+
+        let animationFrame = null;
+
+        let previousWidth = 0;
+
+        let previousHeight = 0;
+
+
+        /* =================================================
+           COLORS
+        ================================================== */
+
+        function getInkColor() {
+
+            return (
+
+                getComputedStyle(
+                    document.documentElement
+                )
+                    .getPropertyValue(
+                        "--ink"
+                    )
+                    .trim()
+
+                || "#171B21"
+
+            );
+
+        }
+
+
+        /* =================================================
+           PARTICLES
+        ================================================== */
+
+        function particleCount() {
+
+            const calculated =
+                Math.round(
+                    (
+                        width *
+                        height
+                    ) /
+                    CONFIG.particleDensity
+                );
+
+
+            return Math.min(
+
+                CONFIG.maxParticles,
+
+                Math.max(
+                    CONFIG.minParticles,
+                    calculated
+                )
+
+            );
+
+        }
+
+
+        function createParticle() {
+
+            const angle =
+                Math.random() *
+                Math.PI *
+                2;
+
+
+            const speed =
+                CONFIG.particleSpeed *
+                (
+                    0.55 +
+                    Math.random() *
+                    0.45
+                );
+
+
+            return {
+
+                x:
+                    Math.random() *
+                    width,
+
+                y:
+                    Math.random() *
+                    height,
+
+                vx:
+                    Math.cos(angle) *
+                    speed,
+
+                vy:
+                    Math.sin(angle) *
+                    speed,
+
+                r:
+                    CONFIG.particleMinRadius +
+                    Math.random() *
+                    (
+                        CONFIG.particleMaxRadius -
+                        CONFIG.particleMinRadius
+                    ),
+
+                opacity:
+                    0.25 +
+                    Math.random() *
+                    CONFIG.particleOpacity,
+
+                phase:
+                    Math.random() *
+                    Math.PI *
+                    2,
+
+                drift:
+                    CONFIG.driftStrength *
+                    (
+                        0.5 +
+                        Math.random() *
+                        0.5
+                    )
+
+            };
+
+        }
+
+
+        function seedParticles() {
+
+            const count =
+                particleCount();
+
+
+            particles =
+                Array.from(
+                    {
+                        length: count
+                    },
+                    createParticle
+                );
+
+
+            links.clear();
+
+            createInitialLinks();
+
+        }
+
+
+        /* =================================================
+           LINKS
+        ================================================== */
+
+        function getMaxLinkDistance() {
+
+            return (
+
+                Math.min(
+                    width,
+                    height
+                ) *
+                CONFIG.linkDistance
+
+            );
+
+        }
+
+
+        function linkKey(i, j) {
+
+            return i < j
+
+                ? `${i}-${j}`
+
+                : `${j}-${i}`;
+
+        }
+
+
+        function distanceBetween(a, b) {
+
+            const dx =
+                a.x - b.x;
+
+            const dy =
+                a.y - b.y;
+
+
+            return Math.sqrt(
+                dx * dx +
+                dy * dy
+            );
+
+        }
+
+
+        function createInitialLinks() {
+
+            const maxDistance =
+                getMaxLinkDistance();
+
+
+            for (
+                let i = 0;
+                i < particles.length;
+                i++
+            ) {
+
+                let connections = 0;
+
+                const nearby = [];
+
+
+                for (
+                    let j = 0;
+                    j < particles.length;
+                    j++
+                ) {
+
+                    if (i === j) {
+
+                        continue;
+
+                    }
+
+
+                    const distance =
+                        distanceBetween(
+                            particles[i],
+                            particles[j]
+                        );
+
+
+                    if (
+                        distance <=
+                        maxDistance
+                    ) {
+
+                        nearby.push({
+                            index: j,
+                            distance
+                        });
+
+                    }
+
+                }
+
+
+                nearby.sort(
+                    (a, b) =>
+                        a.distance -
+                        b.distance
+                );
+
+
+                for (
+                    const candidate of nearby
+                ) {
+
+                    if (
+                        connections >=
+                        CONFIG.maxLinksPerParticle
+                    ) {
+
+                        break;
+
+                    }
+
+
+                    if (
+                        Math.random() >
+                        0.65
+                    ) {
+
+                        continue;
+
+                    }
+
+
+                    const key =
+                        linkKey(
+                            i,
+                            candidate.index
+                        );
+
+
+                    if (!links.has(key)) {
+
+                        links.set(
+                            key,
+                            {
+                                alpha: 0,
+                                target: 1
+                            }
+                        );
+
+
+                        connections++;
+
+                    }
+
+                }
+
+            }
+
+        }
+
+
+        /* =================================================
+           DYNAMIC LINK CHANGES
+        ================================================== */
+
+        function updateLinks() {
+
+            const maxDistance =
+                getMaxLinkDistance();
+
+
+            for (
+                let n = 0;
+                n <
+                CONFIG.linkChangesPerCycle;
+                n++
+            ) {
+
+                const i =
+                    Math.floor(
+                        Math.random() *
+                        particles.length
+                    );
+
+
+                const j =
+                    Math.floor(
+                        Math.random() *
+                        particles.length
+                    );
+
+
+                if (i === j) {
+
+                    continue;
+
+                }
+
+
+                const a =
+                    particles[i];
+
+                const b =
+                    particles[j];
+
+
+                const distance =
+                    distanceBetween(
+                        a,
+                        b
+                    );
+
+
+                if (
+                    distance >
+                    maxDistance
+                ) {
+
+                    continue;
+
+                }
+
+
+                const key =
+                    linkKey(i, j);
+
+
+                const existing =
+                    links.get(key);
+
+
+                if (existing) {
+
+                    if (
+                        Math.random() <
+                        0.35
+                    ) {
+
+                        existing.target =
+                            0;
+
+                    }
+
+                } else {
+
+                    links.set(
+                        key,
+                        {
+                            alpha: 0,
+                            target: 1
+                        }
+                    );
+
+                }
+
+            }
+
+
+            links.forEach(
+                (link) => {
+
+                    if (
+                        link.target === 1 &&
+                        Math.random() < 0.008
+                    ) {
+
+                        link.target = 0;
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* =================================================
+           PARTICLE MOTION
+        ================================================== */
+
+        function updateParticles() {
+
+            const time =
+                frame *
+                0.01;
+
+
+            for (
+                const particle of particles
+            ) {
+
+                const driftX =
+                    Math.sin(
+                        time +
+                        particle.phase
+                    ) *
+                    particle.drift;
+
+
+                const driftY =
+                    Math.cos(
+                        time *
+                        0.8 +
+                        particle.phase
+                    ) *
+                    particle.drift;
+
+
+                particle.x +=
+                    particle.vx +
+                    driftX;
+
+
+                particle.y +=
+                    particle.vy +
+                    driftY;
+
+
+                if (
+                    particle.x <
+                    -10
+                ) {
+
+                    particle.x =
+                        width + 10;
+
+                }
+
+
+                if (
+                    particle.x >
+                    width + 10
+                ) {
+
+                    particle.x = -10;
+
+                }
+
+
+                if (
+                    particle.y <
+                    -10
+                ) {
+
+                    particle.y =
+                        height + 10;
+
+                }
+
+
+                if (
+                    particle.y >
+                    height + 10
+                ) {
+
+                    particle.y = -10;
+
+                }
+
+            }
+
+        }
+
+
+        /* =================================================
+           DRAW LINKS
+        ================================================== */
+
+        function drawLinks(color) {
+
+            ctx.lineWidth = 1.2;
+
+            ctx.strokeStyle = color;
+
+
+            links.forEach(
+                (link, key) => {
+
+                    link.alpha +=
+
+                        (
+                            link.target -
+                            link.alpha
+                        ) *
+                        CONFIG.linkFadeSpeed;
+
+
+                    if (
+                        link.target === 0 &&
+                        link.alpha < 0.015
+                    ) {
+
+                        links.delete(key);
+
+                        return;
+
+                    }
+
+
+                    const [i, j] =
+                        key
+                            .split("-")
+                            .map(Number);
+
+
+                    const a =
+                        particles[i];
+
+                    const b =
+                        particles[j];
+
+
+                    if (!a || !b) {
+
+                        links.delete(key);
+
+                        return;
+
+                    }
+
+
+                    const distance =
+                        distanceBetween(
+                            a,
+                            b
+                        );
+
+
+                    const maxDistance =
+                        getMaxLinkDistance();
+
+
+                    const distanceFactor =
+                        1 -
+                        Math.min(
+                            distance /
+                            maxDistance,
+                            1
+                        );
+
+
+                    ctx.globalAlpha =
+                        link.alpha *
+                        CONFIG.linkOpacity *
+                        (
+                            0.35 +
+                            distanceFactor
+                        );
+
+
+                    ctx.beginPath();
+
+
+                    ctx.moveTo(
+                        a.x,
+                        a.y
+                    );
+
+
+                    ctx.lineTo(
+                        b.x,
+                        b.y
+                    );
+
+
+                    ctx.stroke();
+
+                }
+            );
+
+        }
+
+
+        /* =================================================
+           DRAW PARTICLES
+        ================================================== */
+
+        function drawParticles(color) {
+
+            ctx.fillStyle = color;
+
+
+            for (
+                const particle of particles
+            ) {
+
+                ctx.globalAlpha =
+                    particle.opacity;
+
+
+                ctx.beginPath();
+
+
+                ctx.arc(
+                    particle.x,
+                    particle.y,
+                    particle.r,
+                    0,
+                    Math.PI * 2
+                );
+
+
+                ctx.fill();
+
+            }
+
+        }
+
+
+        /* =================================================
+           RESIZE
+        ================================================== */
+
+        function resize() {
+
+            width =
+                window.innerWidth;
+
+
+            height =
+                window.innerHeight;
+
+
+            dpr =
+                Math.min(
+                    window.devicePixelRatio ||
+                    1,
+                    2
+                );
+
+
+            canvas.width =
+                width * dpr;
+
+
+            canvas.height =
+                height * dpr;
+
+
+            canvas.style.width =
+                `${width}px`;
+
+
+            canvas.style.height =
+                `${height}px`;
+
+
+            ctx.setTransform(
+                dpr,
+                0,
+                0,
+                dpr,
+                0,
+                0
+            );
+
+
+            if (
+                particles.length === 0 ||
+                Math.abs(
+                    width -
+                    previousWidth
+                ) > 150 ||
+                Math.abs(
+                    height -
+                    previousHeight
+                ) > 150
+            ) {
+
+                seedParticles();
+
+            }
+
+
+            previousWidth =
+                width;
+
+
+            previousHeight =
+                height;
+
+        }
+
+
+        /* =================================================
+           RENDER
+        ================================================== */
+
+        function render() {
+
+            if (
+                width === 0 ||
+                height === 0
+            ) {
+
+                animationFrame =
+                    requestAnimationFrame(
+                        render
+                    );
+
+                return;
+
+            }
+
+
+            ctx.clearRect(
+                0,
+                0,
+                width,
+                height
+            );
+
+
+            const color =
+                getInkColor();
+
+
+            if (!reducedMotion) {
+
+                updateParticles();
+
+
+                if (
+                    frame %
+                    CONFIG.linkUpdateInterval ===
+                    0
+                ) {
+
+                    updateLinks();
+
+                }
+
+            }
+
+
+            drawLinks(color);
+
+
+            ctx.globalAlpha = 1;
+
+
+            drawParticles(color);
+
+
+            ctx.globalAlpha = 1;
+
+
+            frame++;
+
+
+            if (!reducedMotion) {
+
+                animationFrame =
+                    requestAnimationFrame(
+                        render
+                    );
+
+            }
+
+        }
+
+
+        /* =================================================
+           INITIALIZATION
+        ================================================== */
+
+        window.addEventListener(
+            "resize",
+            resize
+        );
+
+
+        resize();
+
+
+        if (reducedMotion) {
+
+            updateLinks();
+
+            render();
+
+        } else {
+
+            animationFrame =
+                requestAnimationFrame(
+                    render
+                );
+
+        }
+
+
+        /* =================================================
+           CLEANUP
+        ================================================== */
+
+        window.addEventListener(
+            "beforeunload",
+            () => {
+
+                window.removeEventListener(
+                    "resize",
+                    resize
+                );
+
+
+                if (animationFrame) {
+
+                    cancelAnimationFrame(
+                        animationFrame
+                    );
+
+                }
+
+            },
+            {
+                once: true
+            }
+        );
+
+    })();
+
+</script>
+
+
+<!-- =====================================================
+     THEME TOGGLE
+====================================================== -->
+
+<button
+    id="theme-toggle"
+    class="auth-theme-toggle"
+    type="button"
+    aria-label="Toggle light/dark mode"
+    title="Toggle light/dark mode"
+>
+    ☀
+</button>
+
+
+<!-- =====================================================
+     REGISTER
+====================================================== -->
+
+<main class="auth-page">
+
+    <section class="auth-card">
+
+
+        <!-- BRAND -->
+
+        <div class="auth-brand">
+
+            <img
+                src="assets/rta-logo-color.png"
+                alt="RTA — Roads & Transport Authority"
+                class="auth-logo"
+            >
+
+
+            <div class="auth-program">
+
+                Digital Lab<br>
+                · 4IR Program
+
+            </div>
+
+        </div>
+
+
+        <!-- HEADER -->
+
+        <div class="auth-pretitle">
+
+            Authorized Registration
+
+        </div>
+
+
+        <h1 class="auth-title">
+
+            Create your account.
+
+        </h1>
+
+
+        <p class="auth-description">
+
+            Register for secure access to the RTA Proof of
+            Concept Gallery and explore Digital Lab initiatives.
+
+        </p>
+
+
+        <!-- ERROR -->
+
+        <div
+            id="auth-error"
+            class="auth-error"
+            role="alert"
+        ></div>
+
+
+        <!-- FORM -->
+
+        <form
+            id="register-form"
+            class="auth-form"
+        >
+
+
+            <!-- AUTHORIZATION CODE -->
+
+            <div class="auth-field">
+
+                <label for="invite-code">
+
+                    Authorization Code
+
+                </label>
+
+
+                <input
+                    type="text"
+                    id="invite-code"
+                    name="invite_code"
+                    placeholder="Enter your authorization code"
+                    autocomplete="off"
+                    required
+                >
+
+
+                <div class="auth-help">
+
+                    Enter the authorization code provided by
+                    your administrator.
+
+                </div>
+
+            </div>
+
+
+            <!-- FULL NAME -->
+
+            <div class="auth-field">
+
+                <label for="full-name">
+
+                    Full Name
+
+                </label>
+
+
+                <input
+                    type="text"
+                    id="full-name"
+                    name="name"
+                    placeholder="Your full name"
+                    autocomplete="name"
+                    minlength="2"
+                    maxlength="100"
+                    required
+                >
+
+            </div>
+
+
+            <!-- USERNAME -->
+
+            <div class="auth-field">
+
+                <label for="username">
+
+                    Username
+
+                </label>
+
+
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    placeholder="Choose a username"
+                    autocomplete="username"
+                    minlength="3"
+                    maxlength="50"
+                    required
+                >
+
+            </div>
+
+
+            <!-- PASSWORD -->
+
+            <div class="auth-field">
+
+                <label for="password">
+
+                    Password
+
+                </label>
+
+
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Create a password"
+                    autocomplete="new-password"
+                    minlength="8"
+                    maxlength="128"
+                    required
+                >
+
+
+                <div class="auth-help">
+
+                    Minimum 8 characters.
+
+                </div>
+
+            </div>
+
+
+            <!-- CONFIRM PASSWORD -->
+
+            <div class="auth-field">
+
+                <label for="confirm-password">
+
+                    Confirm Password
+
+                </label>
+
+
+                <input
+                    type="password"
+                    id="confirm-password"
+                    name="confirm_password"
+                    placeholder="Re-enter your password"
+                    autocomplete="new-password"
+                    minlength="8"
+                    maxlength="128"
+                    required
+                >
+
+            </div>
+
+
+            <!-- ERROR -->
+
+            <div
+                id="auth-error"
+                class="auth-error"
+                role="alert"
+            ></div>
+
+
+            <!-- BUTTON -->
+
+            <button
+                type="submit"
+                id="register-button"
+                class="auth-submit"
+            >
+
+                Create Account
+
+            </button>
+
+
+        </form>
+
+
+        <!-- FOOTER -->
+
+        <div class="auth-footer">
+
+            Already have an account?
+
+            <a href="login.html">
+
+                Sign in
+
+            </a>
+
+        </div>
+
+
+        <div class="auth-status">
+
+            RTA Digital Lab · Internal Access
+
+        </div>
+
+
+    </section>
+
+</main>
+
+
+<!-- =====================================================
+     REGISTER + THEME JAVASCRIPT
+====================================================== -->
+
+<script>
+
+    /* =====================================================
+       THEME
+    ====================================================== */
+
+    const themeToggle =
+        document.getElementById(
+            "theme-toggle"
+        );
+
+
+    function setTheme(theme) {
+
+        document.documentElement.setAttribute(
+            "data-theme",
+            theme
+        );
+
+
+        localStorage.setItem(
+            "theme",
+            theme
+        );
+
+
+        themeToggle.textContent =
+            theme === "dark"
+                ? "☾"
+                : "☀";
+
+    }
+
+
+    const savedTheme =
+        localStorage.getItem(
+            "theme"
+        );
+
+
+    const initialTheme =
+        savedTheme === "dark" ||
+        savedTheme === "light"
+
+            ? savedTheme
+
+            : "light";
+
+
+    setTheme(initialTheme);
+
+
+    themeToggle.addEventListener(
+        "click",
+        function () {
+
+            const currentTheme =
+                document.documentElement.getAttribute(
+                    "data-theme"
+                );
+
+
+            const nextTheme =
+                currentTheme === "dark"
+                    ? "light"
+                    : "dark";
+
+
+            setTheme(nextTheme);
+
+        }
+    );
+
+
+    /* =====================================================
+       FORM
+    ====================================================== */
+
+    const form =
+        document.getElementById(
+            "register-form"
+        );
+
+
+    const button =
+        document.getElementById(
+            "register-button"
+        );
+
+
+    const message =
+        document.getElementById(
+            "auth-error"
+        );
+
+
+    /* =====================================================
+       ERROR HANDLING
+    ====================================================== */
+
+    function showError(text) {
+
+        message.textContent =
+            text;
+
+
+        message.classList.add(
+            "visible"
+        );
+
+    }
+
+
+    function clearMessage() {
+
+        message.textContent =
+            "";
+
+
+        message.classList.remove(
+            "visible"
+        );
+
+    }
+
+
+    /* =====================================================
+       REGISTRATION
+    ====================================================== */
+
+    form.addEventListener(
+        "submit",
+        async function (event) {
+
+            event.preventDefault();
+
+
+            clearMessage();
+
+
+            const inviteCode =
+                document
+                    .getElementById(
+                        "invite-code"
+                    )
+                    .value
+                    .trim();
+
+
+            const fullName =
+                document
+                    .getElementById(
+                        "full-name"
+                    )
+                    .value
+                    .trim();
+
+
+            const username =
+                document
+                    .getElementById(
+                        "username"
+                    )
+                    .value
+                    .trim();
+
+
+            const password =
+                document
+                    .getElementById(
+                        "password"
+                    )
+                    .value;
+
+
+            const confirmPassword =
+                document
+                    .getElementById(
+                        "confirm-password"
+                    )
+                    .value;
+
+
+            /* ---------------------------------------------
+               VALIDATION
+            --------------------------------------------- */
+
+            if (
+                inviteCode.length === 0
+            ) {
+
+                showError(
+                    "Please enter your authorization code."
+                );
+
+                return;
+
+            }
+
+
+            if (
+                fullName.length < 2
+            ) {
+
+                showError(
+                    "Please enter your full name."
+                );
+
+                return;
+
+            }
+
+
+            if (
+                username.length < 3
+            ) {
+
+                showError(
+                    "Username must be at least 3 characters long."
+                );
+
+                return;
+
+            }
+
+
+            if (
+                password.length < 8
+            ) {
+
+                showError(
+                    "Password must be at least 8 characters long."
+                );
+
+                return;
+
+            }
+
+
+            if (
+                password !==
+                confirmPassword
+            ) {
+
+                showError(
+                    "Passwords do not match."
+                );
+
+                return;
+
+            }
+
+
+            /* ---------------------------------------------
+               SUBMIT
+            --------------------------------------------- */
+
+            button.disabled =
+                true;
+
+
+            button.textContent =
+                "Creating Account…";
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/auth/register",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            credentials:
+                                "include",
+
+                            body:
+                                JSON.stringify({
+                                    invite_code:
+                                        inviteCode,
+
+                                    name:
+                                        fullName,
+
+                                    username:
+                                        username,
+
+                                    password:
+                                        password
+                                })
+                        }
+                    );
+
+
+                let data = {};
+
+
+                try {
+
+                    data =
+                        await response.json();
+
+                } catch {
+
+                    data = {};
+
+                }
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.detail ||
+                        "Registration failed. Please check your information."
+                    );
+
+                }
+
+
+                window.location.replace(
+                    "login.html?registered=1"
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Registration error:",
+                    error
+                );
+
+
+                showError(
+                    error.message ||
+                    "Unable to create account."
+                );
+
+
+                button.disabled =
+                    false;
+
+
+                button.textContent =
+                    "Create Account";
+
+            }
+
+        }
+    );
+
+</script>
+
+
+</body>
+
+</html>

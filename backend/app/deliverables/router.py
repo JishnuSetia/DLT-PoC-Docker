@@ -5,10 +5,16 @@ import time
 import httpx
 
 from dotenv import load_dotenv
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi import (
+    APIRouter,
+    HTTPException,
+    BackgroundTasks,
+    Depends,
+)
 from fastapi.responses import StreamingResponse
 
 from ..cache.redis import redis_client
+from ..auth.dependencies import require_auth
 
 
 load_dotenv()
@@ -408,7 +414,8 @@ async def refresh_deliverables_cache():
 
 @router.get("")
 async def get_deliverables(
-    background_tasks: BackgroundTasks
+    background_tasks: BackgroundTasks = None,
+    _user=Depends(require_auth),
 ):
 
     if not LABPORTAL_API_KEY:
@@ -471,9 +478,10 @@ async def get_deliverables(
                 )
 
 
-                background_tasks.add_task(
-                    refresh_deliverables_cache
-                )
+                if background_tasks is not None:
+                    background_tasks.add_task(
+                        refresh_deliverables_cache
+                    )
 
 
             else:
@@ -534,7 +542,8 @@ async def get_deliverables(
 
 @router.get("/{id}/demo-video")
 async def get_demo_video(
-    id: int
+    id: int,
+    _user=Depends(require_auth),
 ):
 
     if not LABPORTAL_API_KEY:
@@ -663,7 +672,8 @@ async def get_demo_video(
 @router.get("/{id}")
 async def get_deliverable_by_id(
     id: int,
-    background_tasks: BackgroundTasks
+    background_tasks: BackgroundTasks,
+    _user=Depends(require_auth),
 ):
 
     if not LABPORTAL_API_KEY:

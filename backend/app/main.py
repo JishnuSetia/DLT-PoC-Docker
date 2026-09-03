@@ -1,16 +1,13 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
-from .deliverables.router import (
-    router as deliverables_router,
-    get_deliverables,
-)
-
+from .auth.router import router as auth_router
 from .cache.redis import redis_client
-from .cache.router import (
-    router as cache_router,
+from .cache.router import router as cache_router
+from .deliverables.router import (
+    get_deliverables,
+    router as deliverables_router,
 )
 
 
@@ -19,9 +16,7 @@ from .cache.router import (
 # =========================================================
 
 @asynccontextmanager
-async def lifespan(
-    app: FastAPI,
-):
+async def lifespan(app: FastAPI):
 
     # -----------------------------------------------------
     # REDIS
@@ -29,9 +24,7 @@ async def lifespan(
 
     await redis_client.ping()
 
-    print(
-        "Connected to Redis"
-    )
+    print("Connected to Redis")
 
     # -----------------------------------------------------
     # ENSURE REDIS DATA EXISTS
@@ -50,6 +43,10 @@ async def lifespan(
             f"deliverables cache: {exc}"
         )
 
+    # -----------------------------------------------------
+    # APPLICATION RUNNING
+    # -----------------------------------------------------
+
     yield
 
     # -----------------------------------------------------
@@ -58,9 +55,7 @@ async def lifespan(
 
     await redis_client.close()
 
-    print(
-        "Disconnected from Redis"
-    )
+    print("Disconnected from Redis")
 
 
 # =========================================================
@@ -75,21 +70,12 @@ app = FastAPI(
 
 
 # =========================================================
-# CORS
-# =========================================================
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-# =========================================================
 # ROUTERS
 # =========================================================
+
+app.include_router(
+    auth_router
+)
 
 app.include_router(
     deliverables_router
@@ -106,7 +92,6 @@ app.include_router(
 
 @app.get("/")
 async def root():
-
     return {
         "name": "DDL PoC API",
         "status": "running",
@@ -124,6 +109,7 @@ async def health():
 
     try:
         await redis_client.ping()
+
     except Exception:
         redis_status = "disconnected"
 
