@@ -1055,7 +1055,7 @@ function renderPoCs(
                                 member.avatarUrl ||
                                 member.photo ||
                                 member.photoUrl ||
-                                "assets/tmp-avatar.jpg";
+                                "assets/tmp-avatar.png";
 
 
                             return `
@@ -1070,7 +1070,7 @@ function renderPoCs(
                                         loading="lazy"
                                         onerror="
                                             this.onerror=null;
-                                            this.src='assets/tmp-avatar.jpg';
+                                            this.src='assets/tmp-avatar.png';
                                         "
                                     >
 

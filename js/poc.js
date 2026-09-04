@@ -206,6 +206,39 @@ async function init() {
     }
 }
 
+function getActualTeam(poc) {
+    const teamMembers = poc.teamMembers;
+
+    if (!Array.isArray(teamMembers)) {
+        return getRandomDummyTeam();
+    }
+
+    const validMembers = teamMembers.filter(member => {
+        if (!member || typeof member !== "object") {
+            return false;
+        }
+
+        const firstName = String(member.firstName || "").trim();
+        const lastName = String(member.lastName || "").trim();
+        const name = String(
+            member.name ||
+            member.fullName ||
+            member.displayName ||
+            ""
+        ).trim();
+
+        return Boolean(
+            firstName ||
+            lastName ||
+            name
+        );
+    });
+
+    return validMembers.length > 0
+        ? validMembers
+        : getRandomDummyTeam();
+}
+
 /* =========================================================
    RENDER POC
 ========================================================= */
@@ -244,7 +277,7 @@ function renderPoC(poc) {
     const team =
         Number(poc.id) === 7
             ? poc1Team
-            : getRandomDummyTeam();
+            : getActualTeam(poc);
 
     const technology =
         poc.technology || "";
@@ -991,7 +1024,7 @@ function renderTeam(team) {
                             member.avatarUrl ||
                             member.photo ||
                             member.photoUrl ||
-                            "assets/images/person1.jpg";
+                            "assets/tmp-avatar.png";
 
                         return `
                             <div class="poc-team-member-card">

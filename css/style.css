@@ -597,7 +597,7 @@ a:hover {
 
     z-index: -2;
 
-    opacity: 0.6;
+    opacity: 0.8;
 }
 
 /*
@@ -655,7 +655,7 @@ a:hover {
 
 
 [data-theme="dark"] .constellation-canvas {
-    opacity: 0.5;
+    opacity: 0.8;
 }
 
 
